@@ -11,25 +11,42 @@ export async function fetchReports() {
 }
 
 // POST a new report
-export async function createReport({ lat, lng, severity, desc, imageData }) {
+export async function createReport({ lat, lng, severity, desc, imageData, reporter_name }) {
   const { data } = await API.post('/reports', {
     lat,
     lng,
     severity,
     desc,
     image_data: imageData || null,
+    reporter_name: reporter_name || 'Anonymous'
   });
   return data;
 }
 
 // PATCH claim a report for cleanup
-export async function claimReport(reportId) {
-  const { data } = await API.patch(`/reports/${reportId}/claim`);
+export async function claimReport(reportId, volunteerName) {
+  const { data } = await API.patch(`/reports/${reportId}/claim`, {
+    volunteer_name: volunteerName
+  });
+  return data;
+}
+
+// PATCH submit cleanup proof (marks as cleaned)
+export async function submitCleanup(reportId, afterImageData) {
+  const { data } = await API.patch(`/reports/${reportId}/clean`, {
+    after_image_data: afterImageData
+  });
   return data;
 }
 
 // GET dashboard stats
 export async function fetchStats() {
   const { data } = await API.get('/stats');
+  return data;
+}
+
+// GET leaderboard
+export async function fetchLeaderboard() {
+  const { data } = await API.get('/leaderboard');
   return data;
 }

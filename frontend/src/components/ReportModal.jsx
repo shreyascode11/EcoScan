@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Loader, X } from 'lucide-react';
 
-export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStartPinning }) {
+export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStartPinning, mode = 'REPORT', reportId = null, t }) {
   const [severity, setSeverity]   = useState('medium');
   const [location, setLocation]   = useState(pinnedLocation || null);
   const [locStatus, setLocStatus] = useState(pinnedLocation ? 'ok' : 'idle');
@@ -22,16 +22,38 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
   }
 
   function handleSubmit() {
-    if (!location) return;
-    onSubmit({ severity, lat: location.lat, lng: location.lng, photo, desc });
-    onClose();
+    if (mode === 'REPORT' && !location) return;
+    if (mode === 'PROOF' && !photo) return;
+    
+    // Convert photo to base64 if it exists
+    if (photo) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        onSubmit({ 
+          severity, 
+          lat: location?.lat, 
+          lng: location?.lng, 
+          photo: reader.result, 
+          desc,
+          mode,
+          reportId
+        });
+        onClose();
+      };
+      reader.readAsDataURL(photo);
+    } else {
+      onSubmit({ severity, lat: location.lat, lng: location.lng, photo: null, desc, mode, reportId });
+      onClose();
+    }
   }
 
   const severityConfig = {
-    low:    { label: 'Low',    active: 'border-green-400/50 text-green-300 bg-green-400/10' },
-    medium: { label: 'Medium', active: 'border-orange-400/50 text-orange-300 bg-orange-400/10' },
-    high:   { label: 'High',   active: 'border-red-400/50 text-red-300 bg-red-400/10' },
+    low:    { label: t.low,    active: 'border-green-400/50 text-green-300 bg-green-400/10' },
+    medium: { label: t.medium, active: 'border-orange-400/50 text-orange-300 bg-orange-400/10' },
+    high:   { label: t.high,   active: 'border-red-400/50 text-red-300 bg-red-400/10' },
   };
+
+  const isProof = mode === 'PROOF';
 
   return (
     <div
@@ -48,7 +70,9 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
 
         {/* Header */}
         <div className="flex justify-between items-center">
-          <span className="font-bold text-lg text-white/90">Report a Waste Spot</span>
+          <span className="font-bold text-lg text-white/90">
+            {isProof ? t.uploadProof : t.reportWaste}
+          </span>
           <button onClick={onClose}
             className="w-8 h-8 rounded-full bg-white/[0.08] border border-white/[0.1]
                        text-white/50 hover:text-white flex items-center justify-center
@@ -57,72 +81,78 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
           </button>
         </div>
 
-        {/* Severity */}
-        <div>
-          <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">Severity</div>
-          <div className="flex gap-2">
-            {(['low', 'medium', 'high']).map(s => (
-              <button
-                key={s}
-                onClick={() => setSeverity(s)}
-                className={`flex-1 py-2.5 rounded-xl border font-bold text-[0.85rem] cursor-pointer transition-all
-                  ${severity === s ? severityConfig[s].active : 'border-white/[0.08] text-white/30 bg-white/[0.04]'}`}
+        {!isProof && (
+          <>
+            {/* Severity */}
+            <div>
+              <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">{t.severity}</div>
+              <div className="flex gap-2">
+                {(['low', 'medium', 'high']).map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setSeverity(s)}
+                    className={`flex-1 py-2.5 rounded-xl border font-bold text-[0.85rem] cursor-pointer transition-all
+                      ${severity === s ? severityConfig[s].active : 'border-white/[0.08] text-white/30 bg-white/[0.04]'}`}
+                  >
+                    {severityConfig[s].label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Location */}
+            <div>
+              <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">{t.locationRequired}</div>
+              <div className={`flex items-center gap-2.5 bg-white/[0.05] rounded-xl px-3.5 py-2.5 border
+                ${locStatus === 'ok'  ? 'border-green-400/40 text-green-300' :
+                  locStatus === 'err' ? 'border-red-400/40 text-red-300'     :
+                  'border-white/[0.08] text-white/40'}`}
               >
-                {severityConfig[s].label}
+                <MapPin size={15} />
+                <span className="flex-1 text-[0.82rem]">
+                  {locStatus === 'idle'    && t.noLocation}
+                  {locStatus === 'loading' && t.gettingLocation}
+                  {locStatus === 'ok'     && `${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`}
+                  {locStatus === 'err'    && t.gpsBlocked}
+                </span>
+                {locStatus === 'loading'
+                  ? <Loader size={15} className="animate-spin" />
+                  : <button onClick={handleGeolocate} disabled={locStatus === 'loading'}
+                      className="bg-white/[0.12] text-white/80 border border-white/[0.1] rounded-lg px-3 py-1.5 text-[0.78rem] font-bold cursor-pointer whitespace-nowrap hover:bg-white/[0.18] transition-colors disabled:opacity-50">
+                      {t.useGps}
+                    </button>
+                }
+              </div>
+
+              <button
+                onClick={() => { onStartPinning(); onClose(); }}
+                className="mt-2 w-full bg-transparent border border-dashed border-white/[0.15] text-white/40 rounded-xl py-2 text-[0.82rem] font-semibold cursor-pointer hover:bg-white/[0.05] hover:text-white/60 transition-all"
+              >
+                {t.dropPin}
               </button>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Location */}
-        <div>
-          <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">Location (required)</div>
-          <div className={`flex items-center gap-2.5 bg-white/[0.05] rounded-xl px-3.5 py-2.5 border
-            ${locStatus === 'ok'  ? 'border-green-400/40 text-green-300' :
-              locStatus === 'err' ? 'border-red-400/40 text-red-300'     :
-              'border-white/[0.08] text-white/40'}`}
-          >
-            <MapPin size={15} />
-            <span className="flex-1 text-[0.82rem]">
-              {locStatus === 'idle'    && 'No location set — use GPS or click the map'}
-              {locStatus === 'loading' && 'Getting location...'}
-              {locStatus === 'ok'     && `${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`}
-              {locStatus === 'err'    && 'GPS blocked — drop a pin on the map'}
-            </span>
-            {locStatus === 'loading'
-              ? <Loader size={15} className="animate-spin" />
-              : <button onClick={handleGeolocate} disabled={locStatus === 'loading'}
-                  className="bg-white/[0.12] text-white/80 border border-white/[0.1] rounded-lg px-3 py-1.5 text-[0.78rem] font-bold cursor-pointer whitespace-nowrap hover:bg-white/[0.18] transition-colors disabled:opacity-50">
-                  Use GPS
-                </button>
-            }
-          </div>
-
-          <button
-            onClick={() => { onStartPinning(); onClose(); }}
-            className="mt-2 w-full bg-transparent border border-dashed border-white/[0.15] text-white/40 rounded-xl py-2 text-[0.82rem] font-semibold cursor-pointer hover:bg-white/[0.05] hover:text-white/60 transition-all"
-          >
-            Drop pin on map instead
-          </button>
-        </div>
-
-        {/* Description */}
-        <div>
-          <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">Brief description</div>
-          <textarea
-            value={desc}
-            onChange={e => setDesc(e.target.value)}
-            placeholder="e.g. Overflowing dumpster near bus stop"
-            rows={2}
-            className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-3.5 py-2.5
-                       text-white/80 placeholder:text-white/20 text-[0.88rem] resize-none font-[inherit]
-                       focus:outline-none focus:border-white/[0.2]"
-          />
-        </div>
+            {/* Description */}
+            <div>
+              <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">{t.description}</div>
+              <textarea
+                value={desc}
+                onChange={e => setDesc(e.target.value)}
+                placeholder={t.placeholderDesc}
+                rows={2}
+                className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-3.5 py-2.5
+                           text-white/80 placeholder:text-white/20 text-[0.88rem] resize-none font-[inherit]
+                           focus:outline-none focus:border-white/[0.2]"
+              />
+            </div>
+          </>
+        )}
 
         {/* Photo */}
         <div>
-          <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">Photo (optional)</div>
+          <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">
+            {isProof ? `${t.after} ${t.photoOptional.replace('(', '').replace(')', '')}` : t.photoOptional}
+          </div>
           <input
             type="file" accept="image/*" capture="environment"
             onChange={e => setPhoto(e.target.files[0])}
@@ -134,13 +164,16 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
         {/* Submit */}
         <button
           onClick={handleSubmit}
-          disabled={locStatus !== 'ok'}
+          disabled={!isProof && locStatus !== 'ok'}
           className="w-full py-3.5 bg-white/[0.12] hover:bg-white/[0.18] disabled:opacity-30 disabled:cursor-not-allowed
                      text-white/90 font-bold text-base rounded-xl border border-white/[0.1] cursor-pointer
                      transition-all hover:-translate-y-0.5
                      shadow-[0_4px_20px_rgba(255,255,255,0.05)]"
         >
-          {locStatus !== 'ok' ? 'Set a location first' : 'Submit Report'}
+          {isProof 
+            ? t.submitProof 
+            : (locStatus !== 'ok' ? t.setLocFirst : t.submitReport)
+          }
         </button>
       </div>
     </div>
