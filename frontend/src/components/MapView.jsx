@@ -8,14 +8,13 @@ function MapClickCapture({ onMapClick }) {
 
 export default function MapView({ reports, onClaimSpot, onMapClick, pickingLocation }) {
   return (
-    <div className="fixed top-[58px] left-[260px] right-0 bottom-0 z-10">
+    <div className="relative w-full h-full">
 
-      {/* Map click hint */}
       {pickingLocation && (
         <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[1100]
                         bg-indigo-500/90 text-white text-[0.82rem] font-semibold
                         px-4 py-2 rounded-full pointer-events-none animate-pulse">
-          📍 Click anywhere on the map to drop a pin
+          Click anywhere on the map to drop a pin
         </div>
       )}
 
@@ -46,7 +45,7 @@ export default function MapView({ reports, onClaimSpot, onMapClick, pickingLocat
           >
             <Popup>
               <div className="min-w-[180px]">
-                <div className="font-bold text-[0.95rem] mb-1 text-slate-100">🗑️ {report.desc}</div>
+                <div className="font-bold text-[0.95rem] mb-1 text-slate-100">{report.desc}</div>
                 <div className="text-[0.78rem] text-slate-400 mb-2">
                   {report.lat.toFixed(4)}, {report.lng.toFixed(4)}
                 </div>
@@ -64,14 +63,14 @@ export default function MapView({ reports, onClaimSpot, onMapClick, pickingLocat
                     onClick={() => onClaimSpot(report.id)}
                     className="w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-[0.85rem] rounded-lg cursor-pointer transition-colors border-0"
                   >
-                    🙋 Claim for Cleanup
+                    Claim for Cleanup
                   </button>
                 )}
                 {report.status === 'in-progress' && (
-                  <div className="text-orange-400 text-[0.8rem] font-semibold">⚡ Volunteer On the Way</div>
+                  <div className="text-orange-400 text-[0.8rem] font-semibold">Volunteer On the Way</div>
                 )}
                 {report.status === 'cleaned' && (
-                  <div className="text-green-400 text-[0.8rem] font-semibold">✅ Cleaned!</div>
+                  <div className="text-green-400 text-[0.8rem] font-semibold">Cleaned</div>
                 )}
               </div>
             </Popup>
@@ -80,7 +79,7 @@ export default function MapView({ reports, onClaimSpot, onMapClick, pickingLocat
       </MapContainer>
 
       {/* Legend */}
-      <div className="absolute bottom-6 right-6 z-[1000]
+      <div className="absolute bottom-26 right-6 z-[1000]
                       bg-[rgba(10,15,30,0.85)] backdrop-blur-md
                       border border-white/[0.08] rounded-xl px-3.5 py-2.5
                       flex flex-col gap-1.5 text-[0.78rem] text-slate-400">
