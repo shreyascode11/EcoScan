@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Loader } from 'lucide-react';
+import { MapPin, Loader, X } from 'lucide-react';
 
 export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStartPinning }) {
   const [severity, setSeverity]   = useState('medium');
@@ -28,39 +28,47 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
   }
 
   const severityConfig = {
-    low:    { emoji: '🟢', active: 'border-green-500 text-green-400 bg-green-500/10' },
-    medium: { emoji: '🟠', active: 'border-orange-500 text-orange-400 bg-orange-500/10' },
-    high:   { emoji: '🔴', active: 'border-red-500 text-red-400 bg-red-500/10' },
+    low:    { label: 'Low',    active: 'border-green-400/50 text-green-300 bg-green-400/10' },
+    medium: { label: 'Medium', active: 'border-orange-400/50 text-orange-300 bg-orange-400/10' },
+    high:   { label: 'High',   active: 'border-red-400/50 text-red-300 bg-red-400/10' },
   };
 
   return (
     <div
-      className="fixed inset-0 z-[2000] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-5"
+      className="fixed inset-0 z-[2000] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-5"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-[#111827] border border-white/[0.08] rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 sm:p-7
-                      flex flex-col gap-5 animate-[slideUp_0.25s_ease]">
+      {/* Glass modal */}
+      <div className="w-full max-w-md rounded-t-2xl sm:rounded-2xl
+                      bg-white/[0.08] backdrop-blur-3xl backdrop-saturate-150
+                      border border-white/[0.12]
+                      shadow-[0_32px_64px_rgba(0,0,0,0.4)]
+                      p-7 flex flex-col gap-5
+                      animate-[slideUp_0.3s_ease]">
 
         {/* Header */}
         <div className="flex justify-between items-center">
-          <span className="font-bold text-[1.1rem] text-slate-100">🗑️ Report a Waste Spot</span>
-          <button onClick={onClose} className="bg-[#1f2937] text-slate-400 hover:text-slate-200 border-0 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors text-sm">
-            ✕
+          <span className="font-bold text-lg text-white/90">Report a Waste Spot</span>
+          <button onClick={onClose}
+            className="w-8 h-8 rounded-full bg-white/[0.08] border border-white/[0.1]
+                       text-white/50 hover:text-white flex items-center justify-center
+                       cursor-pointer transition-colors">
+            <X size={16} />
           </button>
         </div>
 
         {/* Severity */}
         <div>
-          <div className="text-[0.75rem] font-bold uppercase tracking-wider text-slate-500 mb-2.5">Severity</div>
+          <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">Severity</div>
           <div className="flex gap-2">
             {(['low', 'medium', 'high']).map(s => (
               <button
                 key={s}
                 onClick={() => setSeverity(s)}
-                className={`flex-1 py-2.5 rounded-xl border-2 font-bold text-[0.85rem] cursor-pointer transition-all
-                  ${severity === s ? severityConfig[s].active : 'border-white/[0.08] text-slate-500 bg-[#1f2937]'}`}
+                className={`flex-1 py-2.5 rounded-xl border font-bold text-[0.85rem] cursor-pointer transition-all
+                  ${severity === s ? severityConfig[s].active : 'border-white/[0.08] text-white/30 bg-white/[0.04]'}`}
               >
-                {severityConfig[s].emoji} {s.charAt(0).toUpperCase() + s.slice(1)}
+                {severityConfig[s].label}
               </button>
             ))}
           </div>
@@ -68,23 +76,23 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
 
         {/* Location */}
         <div>
-          <div className="text-[0.75rem] font-bold uppercase tracking-wider text-slate-500 mb-2.5">Location (required)</div>
-          <div className={`flex items-center gap-2.5 bg-[#1f2937] rounded-xl px-3.5 py-2.5 border
-            ${locStatus === 'ok'  ? 'border-green-500/60 text-green-400' :
-              locStatus === 'err' ? 'border-red-500/60 text-red-400'     :
-              'border-white/[0.08] text-slate-400'}`}
+          <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">Location (required)</div>
+          <div className={`flex items-center gap-2.5 bg-white/[0.05] rounded-xl px-3.5 py-2.5 border
+            ${locStatus === 'ok'  ? 'border-green-400/40 text-green-300' :
+              locStatus === 'err' ? 'border-red-400/40 text-red-300'     :
+              'border-white/[0.08] text-white/40'}`}
           >
             <MapPin size={15} />
             <span className="flex-1 text-[0.82rem]">
-              {locStatus === 'idle'    && 'No location — use GPS or click the map'}
-              {locStatus === 'loading' && 'Getting location…'}
-              {locStatus === 'ok'     && `📍 ${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`}
+              {locStatus === 'idle'    && 'No location set — use GPS or click the map'}
+              {locStatus === 'loading' && 'Getting location...'}
+              {locStatus === 'ok'     && `${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`}
               {locStatus === 'err'    && 'GPS blocked — drop a pin on the map'}
             </span>
             {locStatus === 'loading'
               ? <Loader size={15} className="animate-spin" />
               : <button onClick={handleGeolocate} disabled={locStatus === 'loading'}
-                  className="bg-indigo-500 text-white border-0 rounded-lg px-3 py-1.5 text-[0.78rem] font-bold cursor-pointer whitespace-nowrap hover:bg-indigo-600 transition-colors disabled:opacity-50">
+                  className="bg-white/[0.12] text-white/80 border border-white/[0.1] rounded-lg px-3 py-1.5 text-[0.78rem] font-bold cursor-pointer whitespace-nowrap hover:bg-white/[0.18] transition-colors disabled:opacity-50">
                   Use GPS
                 </button>
             }
@@ -92,32 +100,34 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
 
           <button
             onClick={() => { onStartPinning(); onClose(); }}
-            className="mt-2 w-full bg-transparent border border-dashed border-indigo-500/60 text-indigo-400 rounded-xl py-2 text-[0.82rem] font-semibold cursor-pointer hover:bg-indigo-500/10 transition-colors"
+            className="mt-2 w-full bg-transparent border border-dashed border-white/[0.15] text-white/40 rounded-xl py-2 text-[0.82rem] font-semibold cursor-pointer hover:bg-white/[0.05] hover:text-white/60 transition-all"
           >
-            📌 Drop pin on map instead
+            Drop pin on map instead
           </button>
         </div>
 
         {/* Description */}
         <div>
-          <div className="text-[0.75rem] font-bold uppercase tracking-wider text-slate-500 mb-2.5">Brief description</div>
+          <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">Brief description</div>
           <textarea
             value={desc}
             onChange={e => setDesc(e.target.value)}
-            placeholder="e.g. Overflowing dumpster near bus stop…"
+            placeholder="e.g. Overflowing dumpster near bus stop"
             rows={2}
-            className="w-full bg-[#1f2937] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-slate-200 text-[0.88rem] resize-none font-[inherit] focus:outline-none focus:border-indigo-500/60"
+            className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-3.5 py-2.5
+                       text-white/80 placeholder:text-white/20 text-[0.88rem] resize-none font-[inherit]
+                       focus:outline-none focus:border-white/[0.2]"
           />
         </div>
 
         {/* Photo */}
         <div>
-          <div className="text-[0.75rem] font-bold uppercase tracking-wider text-slate-500 mb-2.5">Photo (optional)</div>
+          <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">Photo (optional)</div>
           <input
             type="file" accept="image/*" capture="environment"
             onChange={e => setPhoto(e.target.files[0])}
-            className="w-full bg-[#1f2937] border-2 border-dashed border-white/[0.08] rounded-xl px-3.5 py-3 text-slate-400 text-[0.85rem] cursor-pointer
-                       file:bg-indigo-500 file:text-white file:border-0 file:rounded-lg file:px-3 file:py-1.5 file:text-[0.8rem] file:font-bold file:mr-3 file:cursor-pointer"
+            className="w-full bg-white/[0.05] border border-dashed border-white/[0.1] rounded-xl px-3.5 py-3 text-white/40 text-[0.85rem] cursor-pointer
+                       file:bg-white/[0.12] file:text-white/80 file:border file:border-white/[0.1] file:rounded-lg file:px-3 file:py-1.5 file:text-[0.8rem] file:font-bold file:mr-3 file:cursor-pointer"
           />
         </div>
 
@@ -125,10 +135,12 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
         <button
           onClick={handleSubmit}
           disabled={locStatus !== 'ok'}
-          className="w-full py-3.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed
-                     text-white font-bold text-base rounded-xl border-0 cursor-pointer transition-all hover:-translate-y-0.5"
+          className="w-full py-3.5 bg-white/[0.12] hover:bg-white/[0.18] disabled:opacity-30 disabled:cursor-not-allowed
+                     text-white/90 font-bold text-base rounded-xl border border-white/[0.1] cursor-pointer
+                     transition-all hover:-translate-y-0.5
+                     shadow-[0_4px_20px_rgba(255,255,255,0.05)]"
         >
-          {locStatus !== 'ok' ? 'Set a location first' : '📤 Submit Report'}
+          {locStatus !== 'ok' ? 'Set a location first' : 'Submit Report'}
         </button>
       </div>
     </div>

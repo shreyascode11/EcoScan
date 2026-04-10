@@ -11,10 +11,13 @@ load_dotenv()
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not SQLALCHEMY_DATABASE_URL:
-    raise ValueError("CRITICAL: DATABASE_URL not found in .env file. Check your /backend/.env")
+    # Fallback to local SQLite if DATABASE_URL is missing
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./ecoscan.db"
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    # Initialize the engine and session for the provided URL
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
-# Initialize the engine and session
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -39,3 +42,4 @@ class ReportModel(Base):
 
 # Create tables immediately on import
 Base.metadata.create_all(bind=engine)
+

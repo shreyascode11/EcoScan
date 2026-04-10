@@ -5,39 +5,17 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
 from contextlib import asynccontextmanager
+from database import SessionLocal, ReportModel, engine, Base
 
-# Assuming database.py is in the same folder
-from database import SessionLocal, ReportModel, engine
-
-# 1. Modern Lifespan Handler (Fixes DeprecationWarning & Handles Seeding)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup Logic: Seed the database if empty
-    db = SessionLocal()
-    try:
-        if db.query(ReportModel).count() == 0:
-            dummy_spots = [
-                ReportModel(lat=12.8231, lng=80.0442, severity="high", status="reported", desc="Large pile near Main Gate"),
-                ReportModel(lat=12.8250, lng=80.0410, severity="medium", status="in-progress", desc="Littering on sidewalk"),
-                ReportModel(lat=12.8210, lng=80.0450, severity="low", status="reported", desc="Small plastic waste"),
-                ReportModel(lat=12.8265, lng=80.0435, severity="high", status="reported", desc="Industrial dumping"),
-                ReportModel(lat=12.8242, lng=80.0461, severity="medium", status="cleaned", desc="Overflowing dumpster"),
-            ]
-            db.add_all(dummy_spots)
-            db.commit()
-            print("✅ Database Seeded successfully with 5 reports.")
-    finally:
-        db.close()
-    
-    yield  # The application runs here
-    
-    # Shutdown Logic (Optional): Close connections, etc.
-    print("🛑 Shutting down Kernel Panic API...")
+    # Initialize app and create tables
+    Base.metadata.create_all(bind=engine)
+    yield
 
-# 2. Initialize App with Lifespan
-app = FastAPI(title="Kernel Panic API", lifespan=lifespan)
+app = FastAPI(lifespan=lifespan)
 
-# 3. CORS Middleware
+# CRITICAL: CORS setup for Rajdeep's frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
