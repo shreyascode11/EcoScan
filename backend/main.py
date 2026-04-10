@@ -6,15 +6,15 @@ from pydantic import BaseModel
 from typing import List, Optional
 from contextlib import asynccontextmanager
 
-# Assuming database.py is in the same folder
-from database import SessionLocal, ReportModel, engine
+# Local imports
+from database import SessionLocal, ReportModel
 
-# 1. Modern Lifespan Handler (Fixes DeprecationWarning & Handles Seeding)
+# 1. Modern Lifespan Handler for Startup/Shutdown tasks
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup Logic: Seed the database if empty
     db = SessionLocal()
     try:
+        # MVE Requirement: Seed 5 reports if database is empty
         if db.query(ReportModel).count() == 0:
             dummy_spots = [
                 ReportModel(lat=12.8231, lng=80.0442, severity="high", status="reported", desc="Large pile near Main Gate"),
@@ -28,16 +28,12 @@ async def lifespan(app: FastAPI):
             print("✅ Database Seeded successfully with 5 reports.")
     finally:
         db.close()
-    
-    yield  # The application runs here
-    
-    # Shutdown Logic (Optional): Close connections, etc.
+    yield
     print("🛑 Shutting down Kernel Panic API...")
 
-# 2. Initialize App with Lifespan
 app = FastAPI(title="Kernel Panic API", lifespan=lifespan)
 
-# 3. CORS Middleware
+# 2. CORS Setup (Crucial for Rajdeep's Frontend)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -45,7 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 4. Data Models
+# 3. Data Schemas
 class ReportCreate(BaseModel):
     lat: float
     lng: float
@@ -53,7 +49,6 @@ class ReportCreate(BaseModel):
     desc: Optional[str] = None
     image_data: Optional[str] = None
 
-# 5. Database Dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -61,16 +56,14 @@ def get_db():
     finally:
         db.close()
 
-# 6. Endpoints
+# 4. Endpoints
 
 @app.get("/reports")
 def get_reports(db: Session = Depends(get_db)):
-    """Returns all spots for the Map View"""
     return db.query(ReportModel).all()
 
 @app.post("/reports")
 def create_report(report: ReportCreate, db: Session = Depends(get_db)):
-    """Handles 'Report a Spot' flow"""
     new_report = ReportModel(
         lat=report.lat, 
         lng=report.lng, 
@@ -86,7 +79,6 @@ def create_report(report: ReportCreate, db: Session = Depends(get_db)):
 
 @app.patch("/reports/{report_id}/claim")
 def claim_report(report_id: int, db: Session = Depends(get_db)):
-    """Changes status to 'in-progress'"""
     report = db.query(ReportModel).filter(ReportModel.id == report_id).first()
     if not report:
         raise HTTPException(status_code=404, detail="Spot not found")
@@ -97,7 +89,6 @@ def claim_report(report_id: int, db: Session = Depends(get_db)):
 
 @app.patch("/reports/{report_id}/clean")
 def clean_report(report_id: int, db: Session = Depends(get_db)):
-    """Marks a spot as fully 'cleaned'"""
     report = db.query(ReportModel).filter(ReportModel.id == report_id).first()
     if not report:
         raise HTTPException(status_code=404)
@@ -108,7 +99,6 @@ def clean_report(report_id: int, db: Session = Depends(get_db)):
 
 @app.get("/stats")
 def get_stats(db: Session = Depends(get_db)):
-    """Dashboard counts for authorities"""
     return {
         "total": db.query(ReportModel).count(),
         "in_progress": db.query(ReportModel).filter(ReportModel.status == "in-progress").count(),
@@ -117,13 +107,12 @@ def get_stats(db: Session = Depends(get_db)):
 
 @app.get("/leaderboard")
 def get_leaderboard():
-    """Gamification for volunteer engagement"""
     return [
         {"name": "Rajdeep", "points": 150},
         {"name": "Tulsi", "points": 120},
         {"name": "Shreyas", "points": 90}
     ]
 
-# 7. RUNNER: This is what keeps the server alive!
 if __name__ == "__main__":
+    print("🚀 Kernel Panic API is starting...")
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -22,20 +22,15 @@ class ReportModel(Base):
     __tablename__ = "reports"
     id = Column(Integer, primary_key=True, index=True)
     
-    # CONSTRAINT 1: Location must be real [cite: 33, 34]
-    lat = Column(Float, nullable=False) # [cite: 33, 34]
-    lng = Column(Float, nullable=False) # [cite: 33, 34]
+    # Coordinates for Leaflet Map
+    lat = Column(Float, nullable=False)
+    lng = Column(Float, nullable=False)
     
-    # Severity must be Low, Medium, or High [cite: 18, 19]
-    severity = Column(String, nullable=False) # lowercase: "low", "medium", "high" [cite: 18, 19]
-    
-    # Status: reported, in-progress, cleaned
-    status = Column(String, default="reported") 
-    
+    # Metadata for filtering and priority
+    severity = Column(String, nullable=False) # low, medium, high
+    status = Column(String, default="reported") # reported, in-progress, cleaned
     desc = Column(String, nullable=True) 
-    
-    # Requirement: User adds a photo [cite: 18]
-    image_data = Column(String, nullable=True) # [cite: 18]
+    image_data = Column(String, nullable=True) # Base64 string for photo requirement
 
-# Create tables immediately on import
+# Ensure tables are created
 Base.metadata.create_all(bind=engine)
