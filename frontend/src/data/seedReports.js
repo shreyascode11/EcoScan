@@ -37,4 +37,8 @@ export const SEED_REPORTS = [
 export const DEFAULT_CENTER = [12.8231, 80.0444];
 export const DEFAULT_ZOOM   = 15;
 
-export const SEVERITY_COLOR = { low: '#22c55e', medium: '#f97316', high: '#ef4444' };
+export const SEVERITY_COLOR = { 
+  low: '#00ff44',    // Neon Green
+  medium: '#ffcc00', // Bright Amber
+  high: '#ff0033'    // Vivid Neon Red
+};

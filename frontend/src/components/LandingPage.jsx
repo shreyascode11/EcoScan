@@ -1,63 +1,84 @@
+import { useState } from 'react';
 import logo from '../assets/logo.png';
 import landingBg from '../assets/landing_bg.png';
 
 export default function LandingPage({ onGetStarted, t, lang, setLang }) {
+  const [name, setName] = useState('');
+
+  const handleStart = () => {
+    if (!name.trim()) {
+      alert(t.userNameRequired);
+      return;
+    }
+    onGetStarted(name);
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center overflow-hidden">
       {/* Background */}
       <div
-        className="absolute inset-0 bg-cover bg-center scale-105 brightness-50 saturate-125"
+        className="absolute inset-0 bg-cover bg-center brightness-75 saturate-125"
         style={{ backgroundImage: `url(${landingBg})` }}
       />
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1e]/30 via-[#0a0f1e]/55 to-[#0a0f1e]/90" />
+
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center gap-5 text-center px-6 mt-[12vh]">
-        {/* Language Switch for Judges */}
-        <div className="absolute top-[-10vh] flex gap-3">
+      <div className="relative z-10 flex flex-col items-center gap-5 text-center px-6 mt-[8vh]">
+        {/* Language Switch */}
+        <div className="absolute top-[-8vh] flex gap-3">
           <button
             onClick={() => setLang('en')}
-            className={`px-4 py-1.5 rounded-full text-[0.7rem] font-bold transition-all cursor-pointer border
-              ${lang === 'en' ? 'bg-indigo-500 border-indigo-400 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}
+            className={`px-5 py-2 rounded-full text-[0.91rem] font-bold transition-all cursor-pointer border
+              ${lang === 'en' ? 'bg-green-600 border-green-500 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}
           >
-            ENGLISH
+            {t.langEn}
           </button>
           <button
             onClick={() => setLang('hi')}
-            className={`px-4 py-1.5 rounded-full text-[0.7rem] font-bold transition-all cursor-pointer border
-              ${lang === 'hi' ? 'bg-indigo-500 border-indigo-400 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}
+            className={`px-5 py-2 rounded-full text-[0.91rem] font-bold transition-all cursor-pointer border
+              ${lang === 'hi' ? 'bg-green-600 border-green-500 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}
           >
-            हिन्दी (HINDI)
+            {t.langHi}
           </button>
         </div>
 
-        {/* Logo */}
-        <img src={logo} alt="EcoScan Logo" className="w-24 h-24 object-contain mix-blend-screen" />
+        {/* Logo — scaled up, negative margins cancel the PNG's built-in transparent padding */}
+        <img src={logo} alt="EcoScan Logo" className="w-96 h-96 object-contain -mt-16 -mb-20" />
 
-        <h1 className="text-[clamp(2.8rem,8vw,5rem)] font-black tracking-tighter bg-gradient-to-br from-white to-indigo-300 bg-clip-text text-transparent m-0 leading-none">
-          {t.appTitle}
-        </h1>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-[clamp(2.5rem,8vw,5rem)] font-black tracking-tighter bg-gradient-to-br from-white to-green-300 bg-clip-text text-transparent m-0 leading-none">
+            {t.appTitle}
+          </h1>
+          <p className="text-green-300 font-semibold tracking-widest uppercase text-[0.65rem] sm:text-xs m-0">
+            {t.tagline}
+          </p>
+        </div>
 
-        <p className="text-indigo-300 font-semibold tracking-widest uppercase text-sm m-0">
-          {t.tagline}
-        </p>
+        {/* Name Input */}
+        <div className="w-full max-w-[280px] sm:max-w-xs flex flex-col gap-2 mt-5">
+          <input
+            type="text"
+            placeholder={t.enterName}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleStart()}
+            className="w-full px-5 py-4 bg-green-900/30 border border-green-500/40 rounded-2xl text-white text-base text-center
+                       focus:outline-none focus:ring-2 focus:ring-green-400/60 focus:bg-green-900/50 focus:border-green-400/70 transition-all
+                       placeholder:text-green-300/40 font-medium shadow-[0_0_20px_rgba(34,197,94,0.08)]"
+          />
+        </div>
 
-        <p className="text-slate-400 text-sm max-w-sm leading-relaxed m-0">
-          Connect citizens, volunteers, and authorities to fight illegal garbage dumping — one pin at a time.
-        </p>
-
-        {/* CTA */}
+        {/* CTA — Green theme with new gradient */}
         <button
-          onClick={onGetStarted}
-          className="mt-4 flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-indigo-500 to-indigo-700 text-white rounded-full text-base font-bold shadow-[0_8px_32px_rgba(99,102,241,0.55)] hover:shadow-[0_14px_40px_rgba(99,102,241,0.7)] hover:-translate-y-1 active:translate-y-0 transition-all duration-200 cursor-pointer border-0"
+          onClick={handleStart}
+          className="flex items-center gap-3 px-8 py-3.5 btn-green-gradient text-white rounded-full text-sm font-black uppercase tracking-widest shadow-[0_12px_32px_rgba(34,197,94,0.3)] hover:shadow-[0_12px_45px_rgba(34,197,94,0.5)] active:scale-95 transition-all duration-300 cursor-pointer border-0"
         >
           {t.getStarted}
-          <span className="text-lg">&rarr;</span>
+          <span className="text-xl leading-none">&rarr;</span>
         </button>
 
-        <p className="text-white/30 text-xs m-0">{t.noSignup}</p>
+        <p className="text-white/20 text-[0.65rem] sm:text-xs italic m-0 pt-2">{t.noSignup}</p>
       </div>
     </div>
   );

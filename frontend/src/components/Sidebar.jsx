@@ -1,24 +1,21 @@
 import { LogOut, MapPin, User, Clock, ChevronRight, ChevronLeft, Trophy } from 'lucide-react';
 
 const severityStyles = {
-  low:    'bg-green-500/15 text-green-400',
-  medium: 'bg-orange-500/15 text-orange-400',
-  high:   'bg-red-500/15 text-red-400',
+  low:    'bg-[#00ff44]/15 text-[#00ff44]',
+  medium: 'bg-[#ffcc00]/15 text-[#ffcc00]',
+  high:   'bg-[#ff0033]/15 text-[#ff0033]',
 };
 
-export default function Sidebar({ isOpen, onToggle, onLogout, reports = [], t, onOpenLeaderboard }) {
-  const currentUser = 'Rajdeep Shaw'; // Target user for "Your Impact" [cite: 1]
-  const initials = currentUser.split(' ').map(n => n[0]).join('');
+export default function Sidebar({ isOpen, onToggle, onLogout, reports = [], t, onOpenLeaderboard, userName = 'Rajdeep Shaw' }) {
+  const currentUser = userName;
+  const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=000000`;
 
-  // 1. Dynamic Statistics
   const myReportsArray = reports.filter(r => r.reporter_name === currentUser);
   const myCleanedArray = reports.filter(r => r.volunteer_name === currentUser && r.status === 'cleaned');
   
   const myReports = myReportsArray.length;
   const myCleaned = myCleanedArray.length;
 
-  // 2. Dynamic Last Reported
-  // Sort by ID descending to get the absolute latest one (no hardcoding)
   const lastUserReport = [...myReportsArray].sort((a, b) => b.id - a.id)[0] || null;
 
   return (
@@ -26,109 +23,108 @@ export default function Sidebar({ isOpen, onToggle, onLogout, reports = [], t, o
       {/* Mobile Backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-[850] bg-black/60 backdrop-blur-sm sm:hidden transition-opacity duration-300"
+          className="fixed inset-0 z-[850] bg-black/60 backdrop-blur-md sm:hidden transition-opacity duration-300"
           onClick={onToggle}
         />
       )}
 
       <aside
-        className={`fixed top-[52px] left-0 bottom-0 z-[900] flex flex-col
-                    bg-black backdrop-blur-2xl backdrop-saturate-200
-                    border-r border-white/[0.1]
+        className={`fixed top-[92px] left-0 bottom-0 z-[900] flex flex-col
+                    bg-black border-r border-white/[0.08]
                     transition-all duration-300 ease-in-out
                     ${isOpen 
-                      ? 'w-[85%] sm:w-[260px] px-4 py-5 translate-x-0' 
-                      : 'w-0 sm:w-[56px] px-0 sm:px-2 py-5 items-center -translate-x-full sm:translate-x-0 overflow-hidden'
+                      ? 'w-[85%] sm:w-[312px] px-6 py-5 translate-x-0' 
+                      : 'w-0 sm:w-[67px] px-0 sm:px-0 py-5 items-center -translate-x-full sm:translate-x-0 overflow-hidden'
                     }`}
       >
 
-        {/* Desktop Toggle button (hidden on mobile) */}
+        {/* Desktop Toggle button - repositioned and centered vertically */}
         <button
           onClick={onToggle}
-          className="hidden sm:flex self-end mb-3 w-8 h-8 rounded-lg bg-white/[0.06] border border-white/[0.08]
-                     text-slate-400 hover:text-white items-center justify-center
-                     cursor-pointer transition-colors flex-shrink-0"
+          className={`hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-[50%] z-20 w-8 h-8 rounded-full bg-green-600
+                     text-white shadow-xl items-center justify-center border-0
+                     cursor-pointer transition-all hover:scale-110 active:scale-95
+                     ${!isOpen && 'right-[33px] translate-x-0'}`}
         >
           {isOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
         </button>
 
-        {/* Profile */}
-        <div className={`flex items-center gap-3 pb-4 ${isOpen ? '' : 'sm:justify-center'} ${!isOpen && 'hidden sm:flex'}`}>
-          <div className="relative w-10 h-10 flex-shrink-0">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-green-500 flex items-center justify-center font-black text-white text-sm">
-              {initials}
-            </div>
-            <div className="absolute -inset-0.5 rounded-full bg-gradient-to-br from-indigo-500 to-green-500 -z-10" />
+        {/* Profile with Dicebear Avatar (Black Background Sync) */}
+        <div className={`flex items-center gap-4 pb-6 transition-all duration-300 ${isOpen ? '' : 'sm:justify-center'} ${!isOpen && 'hidden sm:flex'}`}>
+          <div className="relative w-12 h-12 flex-shrink-0 rounded-[1.25rem] overflow-hidden border border-white/10 shadow-md bg-black">
+            <img src={avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
           </div>
 
           {(isOpen) && (
             <div className="flex flex-col gap-0.5 min-w-0">
-              <span className="font-bold text-[0.9rem] text-slate-100 truncate">{currentUser}</span>
-              <span className="flex items-center gap-1 text-[0.72rem] text-slate-500">
-                <User size={11} /> Volunteer
+              <span className="font-black text-[1.1rem] text-white truncate tracking-tight">{currentUser}</span>
+              <span className="flex items-center gap-1.5 text-[0.7rem] text-slate-500 font-black uppercase tracking-[0.2em]">
+                VERIFIED ID
               </span>
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div className={`flex-1 overflow-y-auto no-scrollbar transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`flex-1 overflow-y-auto no-scrollbar transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           {isOpen && (
             <div className="flex flex-col h-full">
-              <div className="h-px bg-white/[0.06] my-1 mb-4" />
+              <div className="h-px bg-white/[0.08] my-2 mb-8" />
 
               {/* Last Reported */}
-              <div className="mb-5">
-                <div className="flex items-center gap-1.5 text-[0.7rem] font-bold uppercase tracking-widest text-slate-500 mb-2.5">
-                  <Clock size={12} /> {t.lastReported}
+              <div className="mb-8 pl-1">
+                <div className="flex items-center gap-2.5 text-[0.72rem] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">
+                  <Clock size={13} strokeWidth={3} /> {t.lastReported}
                 </div>
                 {lastUserReport ? (
-                  <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-3 flex flex-col gap-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <MapPin size={13} className="text-orange-400" />
-                      <span className={`text-[0.7rem] font-bold px-2 py-0.5 rounded-full ${severityStyles[lastUserReport.severity]}`}>
+                  <div className="bg-white/[0.03] border border-white/[0.08] rounded-[2rem] p-5 flex flex-col gap-2.5 shadow-inner">
+                    <div className="flex items-center gap-2">
+                      <MapPin size={14} className="text-[#ffcc00]" />
+                      <span className={`text-[0.68rem] font-black px-3 py-1 rounded-xl uppercase tracking-widest ${severityStyles[lastUserReport.severity]}`}>
                         {t[lastUserReport.severity]}
                       </span>
                     </div>
-                    <p className="text-[0.82rem] text-slate-200 leading-snug m-0">
+                    <p className="text-[0.88rem] text-white/80 leading-relaxed m-0 font-bold">
                       {lastUserReport.desc}
                     </p>
-                    <span className="text-[0.7rem] text-slate-500">Just Now</span>
+                    <span className="text-[0.68rem] text-slate-600 font-bold flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> {t.justNow}
+                    </span>
                   </div>
                 ) : (
-                  <div className="text-[0.75rem] text-slate-600 italic px-2">No reports yet...</div>
+                  <div className="text-[0.75rem] text-slate-600 font-bold italic px-2">{t.noReportsYet}</div>
                 )}
               </div>
 
               {/* Leaderboard Button */}
               <button
                 onClick={onOpenLeaderboard}
-                className="mb-5 flex items-center gap-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-3.5 hover:bg-indigo-500/20 transition-all group cursor-pointer"
+                className="mb-8 flex items-center gap-4 btn-green-gradient rounded-[1.5rem] p-5 shadow-2xl transition-all group cursor-pointer border-0"
               >
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
-                  <Trophy size={16} />
+                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white group-hover:rotate-12 transition-transform shadow-inner">
+                  <Trophy size={20} />
                 </div>
-                <div className="flex flex-col items-start gap-0.5">
-                  <span className="text-[0.82rem] font-bold text-slate-100">{t.leaderboard}</span>
-                  <span className="text-[0.65rem] text-indigo-300 font-medium">Rankings & Awards</span>
+                <div className="flex flex-col items-start translate-y-0.5">
+                  <span className="text-[0.95rem] font-black text-white leading-none uppercase tracking-tighter">{t.leaderboard}</span>
+                  <span className="text-[0.6rem] text-white/50 font-black uppercase tracking-[0.2em] mt-1">{t.rankingsAndAwards}</span>
                 </div>
               </button>
 
-              <div className="h-px bg-white/[0.06] mb-4" />
+              <div className="h-px bg-white/[0.08] mb-8" />
 
               {/* Your Impact */}
-              <div className="mb-5">
-                <div className="text-[0.7rem] font-bold uppercase tracking-widest text-slate-500 mb-2.5">
+              <div className="mb-8 pr-1 pl-1">
+                <div className="text-[0.72rem] font-black uppercase tracking-[0.2em] text-slate-500 mb-5">
                   {t.yourImpact}
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-3 flex flex-col gap-0.5">
-                    <span className="text-[1.4rem] font-black text-indigo-400">{myReports}</span>
-                    <span className="text-[0.68rem] text-slate-500">{t.reported}</span>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem] p-5 flex flex-col gap-1.5 shadow-sm transition-all hover:bg-white/[0.04] hover:-translate-y-1">
+                    <span className="text-[2.2rem] font-black text-green-600 leading-none tracking-tighter">{myReports}</span>
+                    <span className="text-[0.68rem] text-slate-500 font-black uppercase tracking-widest">{t.reported}</span>
                   </div>
-                  <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-3 flex flex-col gap-0.5">
-                    <span className="text-[1.4rem] font-black text-green-400">{myCleaned}</span>
-                    <span className="text-[0.68rem] text-slate-500">{t.cleaned}</span>
+                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem] p-5 flex flex-col gap-1.5 shadow-sm transition-all hover:bg-white/[0.04] hover:-translate-y-1">
+                    <span className="text-[2.2rem] font-black text-green-600 leading-none tracking-tighter">{myCleaned}</span>
+                    <span className="text-[0.68rem] text-slate-500 font-black uppercase tracking-widest">{t.cleaned}</span>
                   </div>
                 </div>
               </div>
@@ -139,14 +135,14 @@ export default function Sidebar({ isOpen, onToggle, onLogout, reports = [], t, o
         {/* Logout */}
         <button
           onClick={onLogout}
-          className={`mt-auto flex items-center gap-2 px-3.5 py-2.5
-                     bg-red-500/[0.08] border border-red-500/20 text-red-400
-                     rounded-xl text-[0.85rem] font-semibold cursor-pointer
-                     hover:bg-red-500/15 hover:border-red-500/40 transition-all
-                     ${isOpen ? 'w-full' : 'w-10 h-10 justify-center px-0'}
+          className={`mt-auto flex items-center gap-3 px-5 py-4
+                     bg-red-500/[0.05] border border-red-500/10 text-red-500
+                     rounded-[1.5rem] text-[0.85rem] font-black uppercase tracking-[0.2em] cursor-pointer
+                     hover:bg-red-500/10 hover:border-red-500/20 transition-all shadow-sm mb-2
+                     ${isOpen ? 'w-full' : 'w-12 h-12 justify-center px-0'}
                      ${!isOpen && 'hidden sm:flex'}`}
         >
-          <LogOut size={15} />
+          <User size={18} />
           {isOpen && <span>{t.logOut}</span>}
         </button>
       </aside>

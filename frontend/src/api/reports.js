@@ -32,9 +32,10 @@ export async function claimReport(reportId, volunteerName) {
 }
 
 // PATCH submit cleanup proof (marks as cleaned)
-export async function submitCleanup(reportId, afterImageData) {
+export async function submitCleanup(reportId, afterImageData, volunteerName) {
   const { data } = await API.patch(`/reports/${reportId}/clean`, {
-    after_image_data: afterImageData
+    after_image_data: afterImageData,
+    volunteer_name: volunteerName
   });
   return data;
 }

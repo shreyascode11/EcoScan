@@ -7,6 +7,7 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
   const [locStatus, setLocStatus] = useState(pinnedLocation ? 'ok' : 'idle');
   const [photo, setPhoto]         = useState(null);
   const [desc, setDesc]           = useState('');
+  const [landmark, setLandmark]   = useState('');
 
   useEffect(() => {
     if (pinnedLocation) { setLocation(pinnedLocation); setLocStatus('ok'); }
@@ -35,6 +36,7 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
           lng: location?.lng, 
           photo: reader.result, 
           desc,
+          landmark,
           mode,
           reportId
         });
@@ -42,7 +44,7 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
       };
       reader.readAsDataURL(photo);
     } else {
-      onSubmit({ severity, lat: location.lat, lng: location.lng, photo: null, desc, mode, reportId });
+      onSubmit({ severity, lat: location.lat, lng: location.lng, photo: null, desc, landmark, mode, reportId });
       onClose();
     }
   }
@@ -57,14 +59,14 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
 
   return (
     <div
-      className="fixed inset-0 z-[2000] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-5"
+      className="fixed inset-0 z-[2000] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-5"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       {/* Glass modal */}
       <div className="w-full max-w-md rounded-t-2xl sm:rounded-2xl
-                      bg-white/[0.08] backdrop-blur-3xl backdrop-saturate-150
-                      border border-white/[0.12]
-                      shadow-[0_32px_64px_rgba(0,0,0,0.4)]
+                      bg-black/60 backdrop-blur-3xl backdrop-saturate-150
+                      border border-white/[0.05]
+                      shadow-[0_32px_64px_rgba(0,0,0,0.6)]
                       p-7 flex flex-col gap-5
                       animate-[slideUp_0.3s_ease]">
 
@@ -145,13 +147,27 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
                            focus:outline-none focus:border-white/[0.2]"
               />
             </div>
+
+            {/* Landmark */}
+            <div>
+              <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">{t.landmarkLabel}</div>
+              <input
+                type="text"
+                value={landmark}
+                onChange={e => setLandmark(e.target.value)}
+                placeholder={t.landmarkPlaceholder}
+                className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-3.5 py-2.5
+                           text-white/80 placeholder:text-white/20 text-[0.88rem] font-[inherit]
+                           focus:outline-none focus:border-white/[0.2]"
+              />
+            </div>
           </>
         )}
 
         {/* Photo */}
         <div>
           <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">
-            {isProof ? `${t.after} ${t.photoOptional.replace('(', '').replace(')', '')}` : t.photoOptional}
+            {isProof ? `${t.after} ${(t.photoOptional ?? '(optional)').replace('(', '').replace(')', '')}` : (t.photoOptional ?? '(optional)')}
           </div>
           <input
             type="file" accept="image/*" capture="environment"
@@ -165,10 +181,10 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
         <button
           onClick={handleSubmit}
           disabled={!isProof && locStatus !== 'ok'}
-          className="w-full py-3.5 bg-white/[0.12] hover:bg-white/[0.18] disabled:opacity-30 disabled:cursor-not-allowed
-                     text-white/90 font-bold text-base rounded-xl border border-white/[0.1] cursor-pointer
-                     transition-all hover:-translate-y-0.5
-                     shadow-[0_4px_20px_rgba(255,255,255,0.05)]"
+          className="w-full py-4 btn-green-gradient disabled:opacity-30 disabled:cursor-not-allowed
+                     text-white font-black text-base rounded-2xl border-0 cursor-pointer
+                     transition-all hover:scale-[1.02] active:scale-95
+                     shadow-xl uppercase tracking-widest"
         >
           {isProof 
             ? t.submitProof 

@@ -1,56 +1,93 @@
 import logo from '../assets/logo.png';
-import { Trophy, Menu } from 'lucide-react';
+import { Menu, Map, Globe } from 'lucide-react';
 
-export default function Dashboard({ reports, t, lang, setLang, onOpenLeaderboard, onToggleSidebar }) {
+export default function Dashboard({ reports, t, lang, setLang, onToggleSidebar, mapMode, setMapMode, userName }) {
   const total      = reports.length;
   const inProgress = reports.filter(r => r.status === 'in-progress').length;
   const cleaned    = reports.filter(r => r.status === 'cleaned').length;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[1000] flex items-center justify-between px-4 sm:px-5 py-3
-                       bg-black border-b border-white/[0.08]">
-      {/* Brand & Language Toggle */}
-      <div className="flex items-center gap-3 sm:gap-5 flex-shrink-0">
-        {/* Mobile Menu Toggle */}
-        <button
-          onClick={onToggleSidebar}
-          className="sm:hidden w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.08] text-white/70 hover:text-white cursor-pointer transition-colors"
-        >
-          <Menu size={20} />
-        </button>
-
-        <div className="flex items-center gap-3 font-black text-base tracking-tight">
-          <img src={logo} alt="EcoScan Logo" className="w-8 h-8 object-contain" />
-          <div className="flex items-center gap-1">
-            <span className="text-indigo-400">{t.appTitle.substring(0, 3)}</span><span className="text-white">{t.appTitle.substring(3)}</span>
-          </div>
-        </div>
-
-        {/* Language Switch */}
-        <button
-          onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
-          className="bg-white/[0.06] border border-white/[0.1] text-white/70 hover:text-white px-2.5 py-1 rounded-md text-[0.7rem] font-bold transition-all cursor-pointer"
-        >
-          {lang === 'en' ? 'HINDI' : 'ENGLISH'}
-        </button>
+    <header className="fixed top-0 left-0 right-0 z-[1000] flex items-center px-6 py-5
+                       bg-black border-b border-white/[0.08] transition-all duration-300 shadow-2xl">
+      
+      {/* 1. Left Section: Branding */}
+      <div className="flex items-center gap-4 group flex-shrink-0">
+        <img src={logo} alt="EcoScan Logo" className="w-11 h-11 object-contain transition-transform group-hover:scale-110" />
+        <h1 className="text-2xl font-black tracking-tighter m-0 leading-none bg-gradient-to-br from-white to-green-500 bg-clip-text text-transparent">
+          {t.appTitle}
+        </h1>
       </div>
 
-      {/* Stats — no background, just inline */}
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-2 text-[0.82rem] font-semibold whitespace-nowrap">
-          <div className="w-2 h-2 rounded-full bg-red-400" />
-          <span className="text-slate-400">{t.reported}</span>
-          <span className="text-white font-black">{total}</span>
-        </div>
-        <div className="flex items-center gap-2 text-[0.82rem] font-semibold whitespace-nowrap">
-          <div className="w-2 h-2 rounded-full bg-orange-400" />
-          <span className="text-slate-400">{t.inProgress}</span>
-          <span className="text-white font-black">{inProgress}</span>
-        </div>
-        <div className="flex items-center gap-2 text-[0.82rem] font-semibold whitespace-nowrap">
-          <div className="w-2 h-2 rounded-full bg-green-400" />
-          <span className="text-slate-400">{t.cleaned}</span>
-          <span className="text-white font-black">{cleaned}</span>
+      {/* 2. Middle Section: Centered Controls (Floating Look) */}
+      <div className="flex-1 flex justify-center items-center gap-8 pl-12">
+          {/* Mobile Menu */}
+          <button
+            onClick={onToggleSidebar}
+            className="sm:hidden w-10 h-10 flex items-center justify-center rounded-xl text-white/70 hover:text-white cursor-pointer transition-colors"
+          >
+            <Menu size={22} />
+          </button>
+
+          {/* Map Mode Toggle - Street vs Satellite */}
+          <div className="flex gap-2 mr-4">
+            <button
+              onClick={() => setMapMode('street')}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer border-0
+                ${mapMode === 'street' ? 'btn-green-gradient text-white shadow-lg' : 'text-white/30 hover:text-white/60'}`}
+              title="Street View"
+            >
+              <Map size={18} />
+            </button>
+            <button
+              onClick={() => setMapMode('satellite')}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer border-0
+                ${mapMode === 'satellite' ? 'btn-green-gradient text-white shadow-lg' : 'text-white/30 hover:text-white/60'}`}
+              title="Satellite View"
+            >
+              <Globe size={18} />
+            </button>
+          </div>
+
+          {/* Language Toggle - Background-free floating look */}
+          <div className="flex gap-4">
+            {[
+              { id: 'en', label: 'ENG' },
+              { id: 'hi', label: 'हिन्दी' }
+            ].map((l) => (
+              <button
+                key={l.id}
+                onClick={() => setLang(l.id)}
+                className={`px-3 py-1.5 rounded-lg text-[0.7rem] font-black transition-all cursor-pointer border-0 tracking-widest uppercase
+                  ${lang === l.id ? 'text-green-500 scale-110' : 'text-white/50 hover:text-white/80'}`}
+              >
+                {l.label}
+              </button>
+            ))}
+          </div>
+      </div>
+
+      {/* 3. Right Section: Stats (Floating Look - Background-free) */}
+      <div className="flex items-center gap-10 flex-shrink-0">
+        <div className="hidden lg:flex items-center gap-8 transition-all">
+          {[
+            { id: 'reported',   label: t.reported,   count: total,      color: null },
+            { id: 'inProgress', label: t.inProgress, count: inProgress, color: 'bg-yellow-500 shadow-[0_0_12px_#eab308] animate-pulse' },
+            { id: 'cleaned',    label: t.cleaned,    count: cleaned,    color: 'bg-slate-500 shadow-[0_0_10px_#64748b]' }
+          ].map((stat, i) => (
+            <div key={i} className="flex items-center gap-3 transition-all">
+              {stat.color && (
+                <div className={`w-3.5 h-3.5 rounded-full ${stat.color} transition-all duration-500`} />
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-[0.75rem] font-black uppercase tracking-[0.15em] text-white/80">
+                  {stat.label}
+                </span>
+                <span className="text-[1.3rem] font-black leading-none text-white tracking-tighter opacity-100">
+                  {stat.count}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </header>
