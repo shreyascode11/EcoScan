@@ -31,7 +31,7 @@ export default function Leaderboard({ onClose, t, theme }) {
                       bg-[var(--bg-main)] backdrop-blur-3xl
                       border border-white/[0.12]
                       shadow-[0_40px_100px_rgba(0,0,0,0.6)]
-                      p-8 flex flex-col gap-7
+                      p-5 sm:p-8 flex flex-col gap-5 sm:gap-7
                       animate-[slideUp_0.4s_cubic-bezier(0.2,0.8,0.2,1)]">
 
         <div className="flex justify-between items-center">
@@ -40,7 +40,7 @@ export default function Leaderboard({ onClose, t, theme }) {
               <Trophy size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-[var(--text-main)] m-0 tracking-tighter">{t.leaderboard}</h2>
+              <h2 className="text-xl sm:text-2xl font-black text-[var(--text-main)] m-0 tracking-tighter">{t.leaderboard}</h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <p className="text-[0.72rem] text-slate-500 font-bold uppercase tracking-[0.15em] m-0">{t.topContributors}</p>
                 <span className="flex items-center gap-1 bg-red-500/15 border border-red-500/30 rounded-full px-2 py-0.5">
@@ -74,10 +74,10 @@ export default function Leaderboard({ onClose, t, theme }) {
               const initials = v.name.split(' ').map(n => n[0]).join('').toUpperCase();
 
               return (
-                <div key={v.name} className="flex items-center justify-between bg-white/[0.04] border border-white/[0.08] rounded-3xl p-5 transition-all hover:bg-white/[0.08] hover:translate-x-1 group">
-                  <div className="flex items-center gap-5">
+                <div key={v.name} className="flex items-center justify-between bg-white/[0.04] border border-white/[0.08] rounded-3xl p-3.5 sm:p-5 transition-all hover:bg-white/[0.08] hover:translate-x-1 group">
+                  <div className="flex items-center gap-3 sm:gap-5">
                     <div className="relative">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white text-sm shadow-[0_5px_15px_rgba(0,0,0,0.5)] ${profileColor}`}>
+                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center font-black text-white text-sm shadow-[0_5px_15px_rgba(0,0,0,0.5)] ${profileColor}`}>
                         {initials}
                       </div>
                       <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center border-2 border-black shadow-sm
@@ -88,15 +88,15 @@ export default function Leaderboard({ onClose, t, theme }) {
                         {rankIcon || <span className="text-[10px] font-black">{i + 1}</span>}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[1.05rem] font-black text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">{v.name}</span>
-                      <span className="text-[0.7rem] text-white/50 font-bold uppercase tracking-wider">
+                    <div className="flex flex-col gap-0.5 sm:gap-1">
+                      <span className="text-[0.95rem] sm:text-[1.05rem] font-black text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">{v.name}</span>
+                      <span className="text-[0.65rem] sm:text-[0.7rem] text-white/50 font-bold uppercase tracking-wider">
                         {v.cleanups} {t.cleaned}
                       </span>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-[1.5rem] font-black text-emerald-400 tracking-tighter leading-none">{v.score}</span>
+                    <span className="text-[1.3rem] sm:text-[1.5rem] font-black text-emerald-400 tracking-tighter leading-none">{v.score}</span>
                     <span className="text-[0.6rem] text-white/30 font-black uppercase tracking-[0.2em]">{t.points}</span>
                   </div>
                 </div>

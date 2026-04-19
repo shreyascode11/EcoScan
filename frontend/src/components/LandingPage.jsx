@@ -91,7 +91,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
           }}
         />
         <div
-          className="absolute top-[40%] left-[30%] w-[400px] h-[400px] rounded-full opacity-20"
+          className="absolute top-[40%] left-[30%] w-[400px] h-[400px] rounded-full opacity-20 hidden sm:block"
           style={{
             background: '#34d399',
             filter: 'blur(110px)',
@@ -100,7 +100,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
           }}
         />
         <div
-          className="absolute top-[8%] right-[5%] w-[350px] h-[350px] rounded-full opacity-35"
+          className="absolute top-[8%] right-[5%] w-[350px] h-[350px] rounded-full opacity-35 hidden sm:block"
           style={{
             background: '#065f46',
             filter: 'blur(80px)',
@@ -110,7 +110,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
         />
       </div>
 
-      <div className="fixed right-4 top-4 z-50 flex items-center gap-4 sm:right-6 sm:top-6 sm:gap-6 lg:right-10 lg:top-10">
+      <div className="fixed right-4 top-6 z-50 flex items-center gap-4 sm:right-6 sm:top-8 sm:gap-6 lg:right-10 lg:top-10 pt-[env(safe-area-inset-top)]">
         <button
           onClick={() => setLang('en')}
           className={`text-[0.75rem] font-black tracking-[0.2em] uppercase transition-all duration-300 cursor-pointer border-0 bg-transparent
@@ -127,7 +127,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
         </button>
       </div>
 
-      <div className="relative z-20 mx-auto flex min-h-screen w-full max-w-[1500px] items-center justify-center px-4 py-4 sm:px-6 sm:py-6 md:px-8 lg:px-10 xl:px-14">
+      <div className="relative z-20 mx-auto flex min-h-screen w-full max-w-[1500px] items-center justify-center px-3 py-4 sm:px-6 sm:py-6 md:px-8 lg:px-10 xl:px-14">
         <div className="flex w-full items-center justify-center gap-8 lg:justify-between xl:gap-12">
           <div className="w-full max-w-[460px] -translate-y-5 animate-in fade-in slide-in-from-bottom-8 duration-1000 sm:max-w-[480px] lg:max-w-[500px]">
             <div className="mb-6 text-center sm:mb-8 lg:mb-10 w-full flex flex-col items-center">
@@ -138,7 +138,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
                   className="h-auto w-[min(100%,450px)] sm:w-[min(100%,520px)] md:w-[min(100%,580px)] lg:w-[clamp(30rem,38vw,42rem)] drop-shadow-[0_10px_35px_rgba(16,185,129,0.5)] filter-distressed pointer-events-none origin-bottom"
                 />
               </div>
-              <p className="relative z-20 text-center text-[0.68rem] font-bold uppercase tracking-[0.32em] text-emerald-500/80 sm:text-[0.72rem] sm:tracking-[0.4em] drop-shadow-md">
+              <p className="relative z-20 text-center text-[0.6rem] sm:text-[0.68rem] font-bold uppercase tracking-[0.25em] sm:tracking-[0.4em] text-emerald-500/80 drop-shadow-md px-2 max-w-[90%]">
                 {t.tagline || t.heroSub}
               </p>
             </div>
@@ -167,7 +167,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
                       placeholder={t.name || 'Full Name'}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full min-w-0 rounded-[1.35rem] border border-white/5 bg-black/30 px-4 py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none sm:px-5"
+                      className="w-full min-w-0 rounded-[1.35rem] border border-white/5 bg-black/30 px-3.5 py-3.5 sm:px-5 sm:py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none"
                     />
                   )}
                   <input
@@ -175,7 +175,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
                     placeholder={t.email || 'Email Address'}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full min-w-0 rounded-[1.35rem] border border-white/5 bg-black/30 px-4 py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none sm:px-5"
+                    className="w-full min-w-0 rounded-[1.35rem] border border-white/5 bg-black/30 px-3.5 py-3.5 sm:px-5 sm:py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none"
                   />
                 </div>
                 <input
@@ -183,7 +183,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
                   placeholder={isRegisterMode ? (t.enterPassword || 'Create a password') : (t.password || 'Password')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-[1.35rem] border border-white/5 bg-black/30 px-5 py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none sm:px-6"
+                  className="w-full rounded-[1.35rem] border border-white/5 bg-black/30 px-4 py-3.5 sm:px-6 sm:py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none"
                 />
 
                 <div className="flex items-center justify-between gap-3 px-1 text-[0.72rem] text-white/45">

@@ -22,6 +22,10 @@ export default function Sidebar({ isOpen, onToggle, onLogout, reports = [], t, o
   const myReports = currentUser?.reports ?? myReportsArray.length;
   const myCleaned = currentUser?.cleanups ?? myCleanedArray.length;
 
+  const total = reports.length;
+  const inProgress = reports.filter(r => r.status === 'in-progress').length;
+  const globalCleaned = reports.filter(r => r.status === 'cleaned').length;
+
   const lastUserReport = [...myReportsArray].sort((a, b) => b.id - a.id)[0] || null;
 
   return (
@@ -34,12 +38,12 @@ export default function Sidebar({ isOpen, onToggle, onLogout, reports = [], t, o
       )}
 
       <aside
-        className={`fixed top-[80px] lg:top-[88px] left-0 bottom-0 z-[900] flex flex-col
+        className={`fixed top-[72px] sm:top-[72px] lg:top-[88px] left-0 bottom-0 z-[900] flex flex-col
                     bg-black border-r border-white/[0.08]
                     transition-all duration-300 ease-in-out
                     ${isOpen 
-                      ? 'w-[85%] sm:w-[312px] px-6 py-5 translate-x-0' 
-                      : 'w-0 sm:w-[67px] px-0 sm:px-0 py-5 items-center -translate-x-full sm:translate-x-0 overflow-hidden'
+                      ? 'w-[45%] sm:w-[312px] px-2 sm:px-6 py-4 sm:py-5 translate-x-0' 
+                      : 'w-0 sm:w-[67px] px-0 sm:px-0 py-4 sm:py-5 items-center -translate-x-full sm:translate-x-0 overflow-hidden'
                     }`}
       >
 
@@ -71,14 +75,14 @@ export default function Sidebar({ isOpen, onToggle, onLogout, reports = [], t, o
         <div className={`flex-1 overflow-y-auto no-scrollbar transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           {isOpen && (
             <div className="flex flex-col h-full">
-              <div className="h-px bg-white/[0.08] my-2 mb-8" />
+              <div className="h-px bg-white/[0.08] my-2 mb-5 sm:mb-8" />
 
-              <div className="mb-8 pl-1">
+              <div className="mb-5 sm:mb-8 pl-1">
                 <div className="flex items-center gap-2.5 text-[0.72rem] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">
                   <Clock size={13} strokeWidth={3} /> {t.lastReported}
                 </div>
                 {lastUserReport ? (
-                  <div className="bg-white/[0.03] border border-white/[0.08] rounded-[2rem] p-5 flex flex-col gap-2.5 shadow-inner">
+                  <div className="bg-white/[0.03] border border-white/[0.08] rounded-[2rem] p-4 sm:p-5 flex flex-col gap-2.5 shadow-inner">
                     <div className="flex items-center gap-2">
                       <MapPin size={14} className="text-[#ffcc00]" />
                       <span className={`text-[0.68rem] font-black px-3 py-1 rounded-xl uppercase tracking-widest ${severityStyles[lastUserReport.severity]}`}>
@@ -99,7 +103,7 @@ export default function Sidebar({ isOpen, onToggle, onLogout, reports = [], t, o
 
               <button
                 onClick={onOpenLeaderboard}
-                className="mb-8 flex items-center gap-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[1.5rem] p-5 transition-all group cursor-pointer border-0 shadow-[0_10px_30px_rgba(16,185,129,0.2)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.3)] hover:-translate-y-1 active:translate-y-0"
+                className="mb-5 sm:mb-8 flex items-center gap-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[1.5rem] p-4 sm:p-5 transition-all group cursor-pointer border-0 shadow-[0_10px_30px_rgba(16,185,129,0.2)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.3)] hover:-translate-y-1 active:translate-y-0"
               >
                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white group-hover:rotate-12 transition-transform shadow-inner">
                   <Trophy size={20} />
@@ -110,33 +114,56 @@ export default function Sidebar({ isOpen, onToggle, onLogout, reports = [], t, o
                 </div>
               </button>
 
-              <div className="h-px bg-white/[0.08] mb-8" />
+              <div className="h-px bg-white/[0.08] mb-5 sm:mb-8" />
 
-              <div className="mb-8 pr-1 pl-1">
+              <div className="mb-5 sm:mb-8 pr-1 pl-1">
                 <div className="text-[0.72rem] font-black uppercase tracking-[0.2em] text-slate-500 mb-5">
                   {t.yourImpact}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem] p-5 flex flex-col gap-1.5 shadow-sm transition-all hover:bg-white/[0.04] hover:-translate-y-1">
-                    <span className="text-[2.2rem] font-black text-emerald-600 leading-none tracking-tighter">{myReports}</span>
-                    <span className="text-[0.68rem] text-slate-500 font-black uppercase tracking-widest">{t.reported}</span>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem] p-4 sm:p-5 flex flex-col gap-1.5 shadow-sm transition-all hover:bg-white/[0.04] hover:-translate-y-1">
+                    <span className="text-[1.8rem] sm:text-[2.2rem] font-black text-emerald-600 leading-none tracking-tighter">{myReports}</span>
+                    <span className="text-[0.6rem] sm:text-[0.68rem] text-slate-500 font-black uppercase tracking-widest">{t.reported}</span>
                   </div>
-                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem] p-5 flex flex-col gap-1.5 shadow-sm transition-all hover:bg-white/[0.04] hover:-translate-y-1">
-                    <span className="text-[2.2rem] font-black text-emerald-600 leading-none tracking-tighter">{myCleaned}</span>
-                    <span className="text-[0.68rem] text-slate-500 font-black uppercase tracking-widest">{t.cleaned}</span>
+                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem] p-4 sm:p-5 flex flex-col gap-1.5 shadow-sm transition-all hover:bg-white/[0.04] hover:-translate-y-1">
+                    <span className="text-[1.8rem] sm:text-[2.2rem] font-black text-emerald-600 leading-none tracking-tighter">{myCleaned}</span>
+                    <span className="text-[0.6rem] sm:text-[0.68rem] text-slate-500 font-black uppercase tracking-widest">{t.cleaned}</span>
                   </div>
                 </div>
               </div>
+
+              {/* Mobile Only Global Stats */}
+              <div className="mb-8 pr-1 pl-1 lg:hidden">
+                <div className="text-[0.72rem] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 border-t border-white/[0.08] pt-6">
+                  {t.globalImpact || 'Global Impact'}
+                </div>
+                <div className="flex flex-col gap-3">
+                  {[
+                    { label: t.reported || 'Reported', count: total, color: 'bg-white/20' },
+                    { label: t.inProgress || 'In-Progress', count: inProgress, color: 'bg-yellow-500 shadow-[0_0_10px_#eab308]' },
+                    { label: t.cleaned || 'Cleaned', count: globalCleaned, color: 'bg-slate-500 shadow-[0_0_10px_#64748b]' }
+                  ].map((stat, i) => (
+                    <div key={i} className="flex justify-between items-center bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 shadow-sm">
+                       <div className="flex items-center gap-2.5">
+                         <div className={`w-3 h-3 rounded-full ${stat.color}`} />
+                         <span className="text-[0.68rem] font-black uppercase tracking-[0.15em] text-white/80">{stat.label}</span>
+                       </div>
+                       <span className="text-[1.3rem] font-black leading-none text-white">{stat.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
           )}
         </div>
 
         <button
           onClick={onLogout}
-          className={`mt-auto flex items-center gap-3 px-5 py-4
+          className={`mt-auto flex items-center gap-3 px-5 py-3.5 sm:py-4
                      bg-red-500/[0.05] border border-red-500/10 text-red-500
                      rounded-[1.5rem] text-[0.85rem] font-black uppercase tracking-[0.2em] cursor-pointer
-                     hover:bg-red-500/10 hover:border-red-500/20 transition-all shadow-sm mb-2
+                     hover:bg-red-500/10 hover:border-red-500/20 transition-all shadow-sm mb-6 sm:mb-2
                      ${isOpen ? 'w-full' : 'w-12 h-12 justify-center px-0'}
                      ${!isOpen && 'hidden sm:flex'}`}
         >

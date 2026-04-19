@@ -194,10 +194,10 @@ export default function MapView({ reports, onClaimSpot, onMapClick, pickingLocat
         })}
       </MapContainer>
 
-      <div className="absolute bottom-28 right-6 z-[1000]
+      <div className="absolute bottom-[5.5rem] sm:bottom-28 right-4 sm:right-6 z-[1000]
                       bg-black/95 backdrop-blur-md
-                      border border-white/[0.08] rounded-2xl px-5 py-4
-                      flex flex-col gap-3 text-[0.8rem] text-white/90 shadow-2xl font-black uppercase tracking-widest">
+                      border border-white/[0.08] rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4
+                      flex flex-col gap-2.5 sm:gap-3 text-[0.7rem] sm:text-[0.8rem] text-white/90 shadow-2xl font-black uppercase tracking-widest">
         <div className="flex items-center gap-3">
           <div className="w-4 h-4 rounded-full border-2 border-white bg-[#059669] shadow-[0_0_10px_#059669]" />
           {t.low}

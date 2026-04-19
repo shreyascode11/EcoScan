@@ -93,7 +93,7 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
                       bg-black/60 backdrop-blur-3xl backdrop-saturate-150
                       border border-white/[0.05]
                       shadow-[0_32px_64px_rgba(0,0,0,0.6)]
-                      p-7 flex flex-col gap-5
+                      p-5 sm:p-7 flex flex-col gap-4 sm:gap-5
                       animate-[slideUp_0.3s_ease]">
 
         <div className="flex justify-between items-center">
@@ -128,7 +128,7 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
 
             <div>
               <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">{t.locationRequired}</div>
-              <div className={`flex items-center gap-2.5 bg-black/30 rounded-[1.5rem] px-5 py-3.5 border
+              <div className={`flex items-center gap-2.5 bg-black/30 rounded-[1.5rem] px-4 py-3 sm:px-5 sm:py-3.5 border
                 ${locStatus === 'ok'  ? 'border-emerald-500/40 text-emerald-400' :
                   locStatus === 'err' ? 'border-red-400/40 text-red-300'     :
                   'border-white/5 text-white/40'}`}
@@ -164,7 +164,7 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
                 onChange={e => setDesc(e.target.value)}
                 placeholder={t.placeholderDesc}
                 rows={2}
-                className="w-full bg-black/30 border border-white/5 rounded-[1.5rem] py-4 px-6 text-white text-sm focus:outline-none focus:border-emerald-500/40 transition-all font-medium placeholder:text-white/40 resize-none font-[inherit]"
+                className="w-full bg-black/30 border border-white/5 rounded-[1.5rem] py-3.5 px-5 sm:py-4 sm:px-6 text-white text-sm focus:outline-none focus:border-emerald-500/40 transition-all font-medium placeholder:text-white/40 resize-none font-[inherit]"
               />
             </div>
 
@@ -175,7 +175,7 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
                 value={landmark}
                 onChange={e => setLandmark(e.target.value)}
                 placeholder={t.landmarkPlaceholder}
-                className="w-full bg-black/30 border border-white/5 rounded-[1.5rem] py-4 px-6 text-white text-sm focus:outline-none focus:border-emerald-500/40 transition-all font-medium placeholder:text-white/40 font-[inherit]"
+                className="w-full bg-black/30 border border-white/5 rounded-[1.5rem] py-3.5 px-5 sm:py-4 sm:px-6 text-white text-sm focus:outline-none focus:border-emerald-500/40 transition-all font-medium placeholder:text-white/40 font-[inherit]"
               />
             </div>
           </>
@@ -188,8 +188,8 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
           <input
             type="file" accept="image/*" capture="environment"
             onChange={e => setPhoto(e.target.files[0])}
-            className="w-full bg-black/30 border border-dashed border-white/10 rounded-[1.5rem] px-5 py-4 text-white/40 text-sm cursor-pointer
-                       file:bg-white/5 file:text-white file:border file:border-white/10 file:rounded-xl file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-wider file:mr-4 file:cursor-pointer hover:file:bg-white/10 transition-all"
+            className="w-full bg-black/30 border border-dashed border-white/10 rounded-[1.5rem] px-4 py-3 sm:px-5 sm:py-4 text-white/40 text-[0.8rem] sm:text-sm cursor-pointer
+                       file:bg-white/5 file:text-white file:border file:border-white/10 file:rounded-xl file:px-3 file:py-1.5 sm:file:px-4 sm:file:py-2 file:text-[0.6rem] sm:file:text-xs file:font-black file:uppercase file:tracking-wider file:mr-2 sm:file:mr-4 file:cursor-pointer hover:file:bg-white/10 transition-all"
           />
         </div>
 
