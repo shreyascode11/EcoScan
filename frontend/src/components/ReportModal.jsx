@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Loader, X } from 'lucide-react';
+// 1. IMPORT THE COMPRESSION LIBRARY
+import imageCompression from 'browser-image-compression';
 
 export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStartPinning, mode = 'REPORT', reportId = null, t }) {
   const [severity, setSeverity]   = useState('medium');
@@ -8,6 +10,8 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
   const [photo, setPhoto]         = useState(null);
   const [desc, setDesc]           = useState('');
   const [landmark, setLandmark]   = useState('');
+  // Added a small loading state so the button doesn't freeze while compressing
+  const [isCompressing, setIsCompressing] = useState(false);
 
   useEffect(() => {
     if (pinnedLocation) { setLocation(pinnedLocation); setLocStatus('ok'); }
@@ -22,7 +26,8 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
     );
   }
 
-  function handleSubmit() {
+  // 2. MAKE THIS FUNCTION ASYNC
+  async function handleSubmit() {
     if (mode === 'REPORT' && !location) return;
     if (!photo) return;
 
@@ -37,15 +42,34 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
     };
     
     if (photo) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onSubmit({ 
-          ...payload,
-          photo: reader.result, 
-        });
-        onClose();
-      };
-      reader.readAsDataURL(photo);
+      setIsCompressing(true); // Disable button while processing
+      
+      try {
+        // 3. COMPRESS THE IMAGE BEFORE READING IT
+        const options = {
+          maxSizeMB: 1,          // Compress to max 1MB
+          maxWidthOrHeight: 1024, // Resize dimensions for AI
+          useWebWorker: true,
+        };
+        
+        const compressedPhoto = await imageCompression(photo, options);
+        
+        // 4. READ THE COMPRESSED IMAGE INSTEAD OF THE ORIGINAL
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          onSubmit({ 
+            ...payload,
+            photo: reader.result, 
+          });
+          setIsCompressing(false);
+          onClose();
+        };
+        reader.readAsDataURL(compressedPhoto);
+
+      } catch (error) {
+        console.error("Compression error:", error);
+        setIsCompressing(false);
+      }
     } else {
       onSubmit({ ...payload, photo: null });
       onClose();
@@ -113,8 +137,8 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
                 <span className="flex-1 text-[0.82rem]">
                   {locStatus === 'idle'    && t.noLocation}
                   {locStatus === 'loading' && t.gettingLocation}
-                  {locStatus === 'ok'     && `${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`}
-                  {locStatus === 'err'    && t.gpsBlocked}
+                  {locStatus === 'ok'      && `${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`}
+                  {locStatus === 'err'     && t.gpsBlocked}
                 </span>
                 {locStatus === 'loading'
                   ? <Loader size={15} className="animate-spin" />
@@ -171,12 +195,14 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
 
         <button
           onClick={handleSubmit}
-          disabled={(!isProof && locStatus !== 'ok') || !photo}
+          disabled={(!isProof && locStatus !== 'ok') || !photo || isCompressing}
           className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 px-6 rounded-[1.5rem] font-black tracking-widest uppercase text-sm cursor-pointer transition-all shadow-[0_10px_30px_rgba(16,185,129,0.2)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.3)] hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 flex items-center justify-center gap-3 mt-2"
         >
-          {isProof 
-            ? t.submitProof 
-            : (locStatus !== 'ok' ? t.setLocFirst : t.submitReport)
+          {isCompressing 
+            ? "COMPRESSING..." 
+            : isProof 
+              ? t.submitProof 
+              : (locStatus !== 'ok' ? t.setLocFirst : t.submitReport)
           }
         </button>
       </div>
