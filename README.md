@@ -35,7 +35,8 @@ flowchart TB
 
     UI -->|1. REST API Requests| Backend
     Map -->|2. Drop Pin / View Markers| UI
-    WSClient <-->|3. Live Updates (JSON)| WSMgr
+    WSClient -->|3. Live Updates (JSON)| WSMgr
+    WSMgr --> WSClient
     Report -->|4. Read/Write Models| Neon
     Auth -->|5. Password Hash & Token Verification| Neon
     AI -->|6. Compare before/after images| Groq
