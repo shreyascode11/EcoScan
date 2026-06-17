@@ -44,6 +44,11 @@ export async function claimReport(reportId) {
   return data;
 }
 
+export async function unclaimReport(reportId) {
+  const { data } = await API.patch(`/reports/${reportId}/unclaim`);
+  return data;
+}
+
 export async function submitCleanup(reportId, afterImageData) {
   const { data } = await API.patch(`/reports/${reportId}/clean`, {
     after_image_data: afterImageData,

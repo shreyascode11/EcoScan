@@ -113,15 +113,15 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
       <div className="fixed right-4 top-6 z-50 flex items-center gap-4 sm:right-6 sm:top-8 sm:gap-6 lg:right-10 lg:top-10 pt-[env(safe-area-inset-top)]">
         <button
           onClick={() => setLang('en')}
-          className={`text-[0.75rem] font-black tracking-[0.2em] uppercase transition-all duration-300 cursor-pointer border-0 bg-transparent
-            ${lang === 'en' ? 'text-emerald-500 scale-110' : 'text-white/20 hover:text-white/40'}`}
+          className={`text-[0.75rem] font-bold tracking-[0.2em] uppercase transition-all duration-300 cursor-pointer border-0 bg-transparent
+            ${lang === 'en' ? 'text-emerald-500 scale-105' : 'text-white/20 hover:text-white/40'}`}
         >
           ENG
         </button>
         <button
           onClick={() => setLang('hi')}
-          className={`text-[1.1rem] font-black transition-all duration-300 cursor-pointer border-0 bg-transparent
-            ${lang === 'hi' ? 'text-emerald-500 scale-110' : 'text-white/20 hover:text-white/40'}`}
+          className={`text-[0.95rem] font-bold transition-all duration-300 cursor-pointer border-0 bg-transparent
+            ${lang === 'hi' ? 'text-emerald-500 scale-105' : 'text-white/20 hover:text-white/40'}`}
         >
           हिन्दी
         </button>
@@ -143,15 +143,15 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
               </p>
             </div>
 
-            <div className="w-full rounded-[2rem] border border-white/10 bg-white/[0.03] p-3 shadow-2xl backdrop-blur-3xl transition-all duration-500 hover:border-emerald-500/20 sm:rounded-[2.5rem] sm:p-4">
-              <div className="mb-4 flex gap-2 rounded-3xl bg-black/40 p-2">
+            <div className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 shadow-2xl backdrop-blur-md transition-all duration-500 hover:border-emerald-500/20 sm:rounded-3xl">
+              <div className="mb-4 flex gap-2 rounded-xl bg-black/40 p-1.5 border border-white/5">
                 {['register', 'login'].map((m) => (
                   <button
                     key={m}
                     onClick={() => handleModeChange(m)}
-                    className={`flex-1 rounded-2xl px-4 py-3 text-[0.68rem] font-black uppercase tracking-[0.18em] transition-all duration-500 sm:px-6 sm:text-[0.72rem]
+                    className={`flex-1 rounded-lg py-2.5 text-[0.68rem] font-bold uppercase tracking-wider transition-all duration-300 sm:text-[0.72rem] border-0 cursor-pointer
                       ${mode === m
-                        ? 'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                        ? 'bg-emerald-500 text-black shadow-[0_4px_12px_rgba(16,185,129,0.25)]'
                         : 'text-white/40 hover:bg-white/5 hover:text-white/60'}`}
                   >
                     {t[m]}
@@ -167,7 +167,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
                       placeholder={t.name || 'Full Name'}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full min-w-0 rounded-[1.35rem] border border-white/5 bg-black/30 px-3.5 py-3.5 sm:px-5 sm:py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none"
+                      className="w-full min-w-0 rounded-xl border border-white/5 bg-black/30 px-3.5 py-3.5 sm:px-5 sm:py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none"
                     />
                   )}
                   <input
@@ -175,7 +175,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
                     placeholder={t.email || 'Email Address'}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full min-w-0 rounded-[1.35rem] border border-white/5 bg-black/30 px-3.5 py-3.5 sm:px-5 sm:py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none"
+                    className="w-full min-w-0 rounded-xl border border-white/5 bg-black/30 px-3.5 py-3.5 sm:px-5 sm:py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none"
                   />
                 </div>
                 <input
@@ -183,7 +183,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
                   placeholder={isRegisterMode ? (t.enterPassword || 'Create a password') : (t.password || 'Password')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-[1.35rem] border border-white/5 bg-black/30 px-4 py-3.5 sm:px-6 sm:py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none"
+                  className="w-full rounded-xl border border-white/5 bg-black/30 px-4 py-3.5 sm:px-6 sm:py-4 text-sm font-medium text-white transition-all placeholder:text-white/40 focus:border-emerald-500/40 focus:outline-none"
                 />
 
                 <div className="flex items-center justify-between gap-3 px-1 text-[0.72rem] text-white/45">
@@ -194,13 +194,13 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
                 </div>
 
                 {isRegisterMode && (
-                  <div className="flex gap-2 rounded-2xl border border-white/5 bg-black/20 p-2">
+                  <div className="flex gap-2 rounded-xl border border-white/5 bg-black/20 p-2">
                     {['citizen', 'volunteer'].map((r) => (
                       <button
                         key={r}
                         onClick={() => setRole(r)}
-                        className={`flex-1 rounded-xl py-3 text-[0.65rem] font-bold uppercase tracking-widest transition-all
-                          ${role === r ? 'bg-emerald-500/10 text-emerald-400' : 'text-white/30 hover:text-white/50'}`}
+                        className={`flex-1 rounded-lg py-2.5 text-[0.65rem] font-bold uppercase tracking-wider transition-all border-0 cursor-pointer
+                          ${role === r ? 'bg-emerald-500/10 text-emerald-400' : 'text-white/30 hover:text-white/50 bg-transparent'}`}
                       >
                         {t[r]}
                       </button>
@@ -209,7 +209,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
                 )}
 
                 {showValidation && !isFormValid && (
-                  <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/60">
+                  <div className="rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/60">
                     {isRegisterMode && !name.trim()
                       ? (t.userNameRequired || 'Please enter your name to continue.')
                       : !email.trim() || !password.trim()
@@ -219,7 +219,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
                 )}
 
                 {authError && (
-                  <div className="rounded-2xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+                  <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
                     {authError}
                   </div>
                 )}
@@ -227,15 +227,15 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
             <button
               onClick={handleStart}
               disabled={loading}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-[1.5rem] py-4 px-6 font-black text-sm uppercase tracking-widest transition-all shadow-[0_10px_30px_rgba(16,185,129,0.2)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.3)] hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 flex items-center justify-center gap-3 mt-4"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl py-3.5 px-6 font-bold text-sm uppercase tracking-wider transition-all shadow-[0_10px_30px_rgba(16,185,129,0.15)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.25)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 flex items-center justify-center gap-3 mt-4 border-0 cursor-pointer"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
                   {mode === 'register' ? (t.createAccount || 'Create Account') : (t.login || 'Login')}
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </>
               )}

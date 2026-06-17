@@ -63,6 +63,11 @@ class ReportModel(Base):
     verification_status = Column(String, default="not-started")
     verification_confidence = Column(Float, nullable=True)
     verification_summary = Column(String, nullable=True)
+    
+    loc_verification_status = Column(String, default="not-started")
+    loc_verification_confidence = Column(Float, nullable=True)
+    loc_verification_summary = Column(String, nullable=True)
+    
     cleaner = relationship(
         "User", back_populates="claimed_reports",
         foreign_keys=[claimed_by_id]
@@ -99,6 +104,9 @@ def ensure_schema():
             ("verification_status", "ALTER TABLE reports ADD COLUMN verification_status VARCHAR DEFAULT 'not-started'"),
             ("verification_confidence", "ALTER TABLE reports ADD COLUMN verification_confidence DOUBLE PRECISION"),
             ("verification_summary", "ALTER TABLE reports ADD COLUMN verification_summary VARCHAR"),
+            ("loc_verification_status", "ALTER TABLE reports ADD COLUMN loc_verification_status VARCHAR DEFAULT 'not-started'"),
+            ("loc_verification_confidence", "ALTER TABLE reports ADD COLUMN loc_verification_confidence DOUBLE PRECISION"),
+            ("loc_verification_summary", "ALTER TABLE reports ADD COLUMN loc_verification_summary VARCHAR"),
         ],
     }
 

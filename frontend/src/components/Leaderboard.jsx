@@ -24,94 +24,94 @@ export default function Leaderboard({ onClose, t }) {
 
   return (
     <div
-      className="fixed inset-0 z-[2000] bg-black/50 backdrop-blur-md flex items-center justify-center p-5"
+      className="fixed inset-0 z-[2000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md rounded-[2.5rem]
-                      bg-[var(--bg-main)] backdrop-blur-3xl
-                      border border-white/[0.12]
-                      shadow-[0_40px_100px_rgba(0,0,0,0.6)]
-                      p-5 sm:p-8 flex flex-col gap-5 sm:gap-7
-                      animate-[slideUp_0.4s_cubic-bezier(0.2,0.8,0.2,1)]">
+      <div className="w-full max-w-md rounded-2xl
+                      bg-black backdrop-blur-md
+                      border border-white/[0.08]
+                      shadow-[0_24px_64px_rgba(0,0,0,0.8)]
+                      p-6 flex flex-col gap-6
+                      animate-[slideUp_0.3s_cubic-bezier(0.2,0.8,0.2,1)]">
 
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shadow-[0_5px_15px_rgba(16,185,129,0.3)] rotate-3">
-              <Trophy size={24} />
+        <div className="flex justify-between items-center pb-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+              <Trophy size={18} />
             </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-[var(--text-main)] m-0 tracking-tighter">{t.leaderboard}</h2>
+            <div className="text-left">
+              <h2 className="text-lg font-bold text-white m-0 tracking-wide">{t.leaderboard}</h2>
               <div className="flex items-center gap-2 mt-0.5">
-                <p className="text-[0.72rem] text-slate-500 font-bold uppercase tracking-[0.15em] m-0">{t.topContributors}</p>
-                <span className="flex items-center gap-1 bg-red-500/15 border border-red-500/30 rounded-full px-2 py-0.5">
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                  <span className="text-[0.6rem] font-black text-red-400 uppercase tracking-widest">{t.live}</span>
+                <p className="text-[0.62rem] text-slate-500 font-semibold uppercase tracking-wider m-0">{t.topContributors}</p>
+                <span className="flex items-center gap-1 bg-red-500/10 border border-red-500/20 rounded-md px-1.5 py-0.5">
+                  <span className="w-1 h-1 bg-red-500 rounded-full animate-pulse" />
+                  <span className="text-[0.55rem] font-bold text-red-400 uppercase tracking-wider">{t.live}</span>
                 </span>
               </div>
             </div>
           </div>
           <button onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white/[0.08] border border-white/[0.1]
+            className="w-8 h-8 rounded-full bg-white/5 border border-white/10
                        text-white/50 hover:text-white flex items-center justify-center
-                       cursor-pointer transition-all hover:rotate-90">
-            <X size={20} />
+                       cursor-pointer transition-all hover:bg-white/10">
+            <X size={16} />
           </button>
         </div>
 
-        <div className="flex flex-col gap-4 min-h-[350px] max-h-[450px] overflow-y-auto pr-2 no-scrollbar">
+        <div className="flex flex-col gap-3 min-h-[300px] max-h-[400px] overflow-y-auto pr-1 no-scrollbar">
           {loading ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-emerald-600 gap-4 opacity-60">
-              <Loader2 size={42} className="animate-spin" />
-              <span className="text-sm font-black uppercase tracking-widest">{t.calculatingRankings}</span>
+            <div className="flex-1 flex flex-col items-center justify-center text-emerald-500 gap-3 opacity-60">
+              <Loader2 size={32} className="animate-spin" />
+              <span className="text-[0.68rem] font-bold uppercase tracking-widest">{t.calculatingRankings}</span>
             </div>
           ) : leaderboard.length > 0 ? (
             leaderboard.map((v, i) => {
-              const rankIcon = i === 0 ? <Trophy size={16} className="text-yellow-400" /> :
-                             i === 1 ? <Medal size={16} className="text-slate-300" /> :
-                             i === 2 ? <Star size={16} className="text-orange-400" /> : null;
+              const rankIcon = i === 0 ? <Trophy size={14} className="text-yellow-400" /> :
+                             i === 1 ? <Medal size={14} className="text-slate-300" /> :
+                             i === 2 ? <Star size={14} className="text-orange-400" /> : null;
               
               const profileColor = colors[v.name.length % colors.length];
               const initials = v.name.split(' ').map(n => n[0]).join('').toUpperCase();
 
               return (
-                <div key={v.name} className="flex items-center justify-between bg-white/[0.04] border border-white/[0.08] rounded-3xl p-3.5 sm:p-5 transition-all hover:bg-white/[0.08] hover:translate-x-1 group">
-                  <div className="flex items-center gap-3 sm:gap-5">
+                <div key={v.name} className="flex items-center justify-between bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 transition-all hover:bg-white/[0.04] hover:translate-x-0.5 group">
+                  <div className="flex items-center gap-4">
                     <div className="relative">
-                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center font-black text-white text-sm shadow-[0_5px_15px_rgba(0,0,0,0.5)] ${profileColor}`}>
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-white text-xs shadow-inner ${profileColor}`}>
                         {initials}
                       </div>
-                      <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center border-2 border-black shadow-sm
+                      <div className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center border border-black shadow-md text-[9px] font-bold
                         ${i === 0 ? 'bg-[#ffcc00] text-black' : 
                           i === 1 ? 'bg-slate-300 text-black' :
                           i === 2 ? 'bg-amber-600 text-white' :
                           'bg-white/10 text-white'}`}>
-                        {rankIcon || <span className="text-[10px] font-black">{i + 1}</span>}
+                        {rankIcon || <span>{i + 1}</span>}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-0.5 sm:gap-1">
-                      <span className="text-[0.95rem] sm:text-[1.05rem] font-black text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">{v.name}</span>
-                      <span className="text-[0.65rem] sm:text-[0.7rem] text-white/50 font-bold uppercase tracking-wider">
+                    <div className="flex flex-col gap-0.5 text-left">
+                      <span className="text-[0.82rem] font-bold text-white group-hover:text-emerald-400 transition-colors uppercase tracking-wide">{v.name}</span>
+                      <span className="text-[0.62rem] text-slate-400 font-semibold uppercase tracking-wider">
                         {v.cleanups} {t.cleaned}
                       </span>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="text-[1.3rem] sm:text-[1.5rem] font-black text-emerald-400 tracking-tighter leading-none">{v.score}</span>
-                    <span className="text-[0.6rem] text-white/30 font-black uppercase tracking-[0.2em]">{t.points}</span>
+                  <div className="flex flex-col items-end gap-0.5">
+                    <span className="text-[1.2rem] font-bold text-emerald-400 tracking-tight leading-none">{v.score}</span>
+                    <span className="text-[0.55rem] text-slate-500 font-bold uppercase tracking-widest">{t.points}</span>
                   </div>
                 </div>
               );
             })
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-700 gap-4 opacity-20">
-              <Trophy size={64} strokeWidth={1} />
-              <span className="text-sm font-black uppercase tracking-widest">{t.noCleanups}</span>
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-600 gap-3 opacity-30 py-8">
+              <Trophy size={48} strokeWidth={1.5} />
+              <span className="text-xs font-bold uppercase tracking-widest">{t.noCleanups}</span>
             </div>
           )}
         </div>
 
-        <div className="pt-4 border-t border-white/[0.06] text-center">
-          <p className="text-[0.68rem] text-slate-500 font-bold uppercase tracking-wider italic">
+        <div className="pt-3 border-t border-white/[0.06] text-center">
+          <p className="text-[0.62rem] text-slate-500 font-semibold uppercase tracking-wider italic">
             {t.scoringInfo}
           </p>
         </div>
@@ -119,3 +119,6 @@ export default function Leaderboard({ onClose, t }) {
     </div>
   );
 }
+
+
+

@@ -82,24 +82,24 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
 
   return (
     <div
-      className="fixed inset-0 z-[2000] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center px-[5vw] pb-6 pt-0 sm:p-5"
+      className="fixed inset-0 z-[2000] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center px-[5vw] pb-6 pt-0 sm:p-5"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md rounded-2xl sm:rounded-2xl
-                      bg-black/60 backdrop-blur-3xl backdrop-saturate-150
-                      border border-white/[0.05]
-                      shadow-[0_32px_64px_rgba(0,0,0,0.6)]
-                      p-5 sm:p-7 flex flex-col gap-4 sm:gap-5
+      <div className="w-full max-w-md rounded-2xl
+                      bg-black backdrop-blur-md
+                      border border-white/[0.08]
+                      shadow-[0_24px_64px_rgba(0,0,0,0.8)]
+                      p-6 flex flex-col gap-5
                       animate-[slideUp_0.3s_ease]">
 
-        <div className="flex justify-between items-center">
-          <span className="font-bold text-lg text-white/90">
+        <div className="flex justify-between items-center pb-1">
+          <span className="font-bold text-lg text-white">
             {isProof ? t.uploadProof : t.reportWaste}
           </span>
           <button onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/[0.08] border border-white/[0.1]
+            className="w-8 h-8 rounded-full bg-white/5 border border-white/10
                        text-white/50 hover:text-white flex items-center justify-center
-                       cursor-pointer transition-colors">
+                       cursor-pointer transition-colors hover:bg-white/10">
             <X size={16} />
           </button>
         </div>
@@ -107,14 +107,14 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
         {!isProof && (
           <>
             <div>
-              <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">{t.severity}</div>
+              <div className="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 mb-2">{t.severity}</div>
               <div className="flex gap-2">
                 {(['low', 'medium', 'high']).map(s => (
                   <button
                     key={s}
                     onClick={() => setSeverity(s)}
-                    className={`flex-1 py-2.5 rounded-xl border font-bold text-[0.85rem] cursor-pointer transition-all
-                      ${severity === s ? severityConfig[s].active : 'border-white/[0.08] text-white/30 bg-white/[0.04]'}`}
+                    className={`flex-1 py-2.5 rounded-xl border font-bold text-[0.8rem] cursor-pointer transition-all
+                      ${severity === s ? severityConfig[s].active : 'border-white/[0.08] text-white/30 bg-white/[0.02]'}`}
                   >
                     {severityConfig[s].label}
                   </button>
@@ -123,23 +123,23 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
             </div>
 
             <div>
-              <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">{t.locationRequired}</div>
-              <div className={`flex items-center gap-2.5 bg-black/30 rounded-[1.5rem] px-4 py-3 sm:px-5 sm:py-3.5 border
+              <div className="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 mb-2">{t.locationRequired}</div>
+              <div className={`flex items-center gap-2.5 bg-black/30 rounded-xl px-4 py-3.5 border
                 ${locStatus === 'ok'  ? 'border-emerald-500/40 text-emerald-400' :
                   locStatus === 'err' ? 'border-red-400/40 text-red-300'     :
                   'border-white/5 text-white/40'}`}
               >
-                <MapPin size={15} />
-                <span className="flex-1 text-[0.82rem]">
+                <MapPin size={14} />
+                <span className="flex-1 text-[0.8rem] text-left">
                   {locStatus === 'idle'    && t.noLocation}
                   {locStatus === 'loading' && t.gettingLocation}
                   {locStatus === 'ok'      && `${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`}
                   {locStatus === 'err'     && t.gpsBlocked}
                 </span>
                 {locStatus === 'loading'
-                  ? <Loader size={15} className="animate-spin" />
+                  ? <Loader size={14} className="animate-spin" />
                   : <button onClick={handleGeolocate} disabled={locStatus === 'loading'}
-                      className="bg-white/5 text-white/80 border border-white/5 rounded-xl px-4 py-2 text-[0.78rem] font-bold cursor-pointer whitespace-nowrap hover:bg-white/10 transition-colors disabled:opacity-50">
+                      className="bg-white/5 text-white/80 border border-white/10 rounded-lg px-3 py-1.5 text-[0.7rem] font-semibold cursor-pointer whitespace-nowrap hover:bg-white/10 transition-colors disabled:opacity-50 border-0">
                       {t.useGps}
                     </button>
                 }
@@ -147,52 +147,52 @@ export default function ReportModal({ onClose, onSubmit, pinnedLocation, onStart
 
               <button
                 onClick={() => { onStartPinning(); onClose(); }}
-                className="mt-2 w-full bg-transparent border border-dashed border-white/[0.15] text-white/40 rounded-[1.5rem] py-3 text-[0.82rem] font-semibold cursor-pointer hover:bg-white/5 hover:text-white/60 transition-all"
+                className="mt-2 w-full bg-transparent border border-dashed border-white/[0.15] text-white/40 rounded-xl py-3 text-[0.78rem] font-semibold cursor-pointer hover:bg-white/5 hover:text-white/60 transition-all"
               >
                 {t.dropPin}
               </button>
             </div>
 
             <div>
-              <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">{t.description}</div>
+              <div className="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 mb-2">{t.description}</div>
               <textarea
                 value={desc}
                 onChange={e => setDesc(e.target.value)}
                 placeholder={t.placeholderDesc}
                 rows={2}
-                className="w-full bg-black/30 border border-white/5 rounded-[1.5rem] py-3.5 px-5 sm:py-4 sm:px-6 text-white text-sm focus:outline-none focus:border-emerald-500/40 transition-all font-medium placeholder:text-white/40 resize-none font-[inherit]"
+                className="w-full bg-black/30 border border-white/5 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-emerald-500/40 transition-all font-medium placeholder:text-white/30 resize-none font-[inherit]"
               />
             </div>
 
             <div>
-              <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">{t.landmarkLabel}</div>
+              <div className="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 mb-2">{t.landmarkLabel}</div>
               <input
                 type="text"
                 value={landmark}
                 onChange={e => setLandmark(e.target.value)}
                 placeholder={t.landmarkPlaceholder}
-                className="w-full bg-black/30 border border-white/5 rounded-[1.5rem] py-3.5 px-5 sm:py-4 sm:px-6 text-white text-sm focus:outline-none focus:border-emerald-500/40 transition-all font-medium placeholder:text-white/40 font-[inherit]"
+                className="w-full bg-black/30 border border-white/5 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-emerald-500/40 transition-all font-medium placeholder:text-white/30 font-[inherit]"
               />
             </div>
           </>
         )}
 
         <div>
-          <div className="text-[0.72rem] font-semibold uppercase tracking-wider text-white/40 mb-2.5">
-          {isProof ? `${t.after} ${(t.photoOptional ?? '(optional)').replace('(', '').replace(')', '')}` : (t.photoOptional ?? '(optional)')}
+          <div className="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 mb-2">
+            {isProof ? `${t.after} ${(t.photoOptional ?? '(optional)').replace('(', '').replace(')', '')}` : (t.photoOptional ?? '(optional)')}
           </div>
           <input
             type="file" accept="image/*"
             onChange={e => setPhoto(e.target.files[0])}
-            className="w-full bg-black/30 border border-dashed border-white/10 rounded-[1.5rem] px-4 py-3 sm:px-5 sm:py-4 text-white/40 text-[0.8rem] sm:text-sm cursor-pointer
-                       file:bg-white/5 file:text-white file:border file:border-white/10 file:rounded-xl file:px-3 file:py-1.5 sm:file:px-4 sm:file:py-2 file:text-[0.6rem] sm:file:text-xs file:font-black file:uppercase file:tracking-wider file:mr-2 sm:file:mr-4 file:cursor-pointer hover:file:bg-white/10 transition-all"
+            className="w-full bg-black/30 border border-dashed border-white/10 rounded-xl px-4 py-3.5 text-white/40 text-[0.78rem] sm:text-sm cursor-pointer
+                       file:bg-white/5 file:text-white file:border file:border-white/10 file:rounded-lg file:px-3 file:py-1.5 file:text-[0.65rem] file:font-bold file:uppercase file:tracking-wider file:mr-3 file:cursor-pointer hover:file:bg-white/10 transition-all"
           />
         </div>
 
         <button
           onClick={handleSubmit}
           disabled={(!isProof && locStatus !== 'ok') || !photo || isCompressing}
-          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 px-6 rounded-[1.5rem] font-black tracking-widest uppercase text-sm cursor-pointer transition-all shadow-[0_10px_30px_rgba(16,185,129,0.2)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.3)] hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 flex items-center justify-center gap-3 mt-2"
+          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 px-6 rounded-xl font-bold tracking-wider uppercase text-sm cursor-pointer transition-all shadow-[0_10px_30px_rgba(16,185,129,0.15)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.25)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 flex items-center justify-center gap-3 mt-2 border-0"
         >
           {isCompressing 
             ? "COMPRESSING..." 

@@ -1,176 +1,286 @@
-import { LogOut, MapPin, User, Clock, ChevronRight, ChevronLeft, Trophy } from 'lucide-react';
+import { LogOut, ChevronLeft, PanelLeftClose, PanelLeftOpen, Trophy, BarChart2, Flag, Sparkles, Leaf } from 'lucide-react';
 
-const severityStyles = {
-  low:    'bg-emerald-600/15 text-emerald-600',
-  medium: 'bg-[#ffcc00]/15 text-[#ffcc00]',
-  high:   'bg-[#ff0033]/15 text-[#ff0033]',
+const SEV = {
+  low:    { dot: 'bg-emerald-400', text: 'text-emerald-400', strip: 'bg-emerald-400/10 border-emerald-400/20' },
+  medium: { dot: 'bg-amber-400',   text: 'text-amber-400',   strip: 'bg-amber-400/10   border-amber-400/20'   },
+  high:   { dot: 'bg-red-400',     text: 'text-red-400',     strip: 'bg-red-400/10     border-red-400/20'     },
 };
 
 export default function Sidebar({ isOpen, onToggle, onLogout, reports = [], t, onOpenLeaderboard, currentUser }) {
-  const userName = currentUser?.name || '';
-  const initials = userName
-    .split(' ')
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  const userName  = currentUser?.name  || '';
+  const userRole  = currentUser?.role  || 'citizen';
+  const userScore = currentUser?.score ?? 0;
 
-  const myReportsArray = reports.filter(r => r.reporter_name === userName);
-  const myCleanedArray = reports.filter(r => r.volunteer_name === userName && r.status === 'cleaned');
-  
-  const myReports = currentUser?.reports ?? myReportsArray.length;
-  const myCleaned = currentUser?.cleanups ?? myCleanedArray.length;
+  const initials = userName.split(' ').filter(Boolean).map(p => p[0]).join('').slice(0, 2).toUpperCase() || '?';
 
-  const reported = reports.filter(r => r.status === 'reported' || r.status === 'verification-failed').length;
-  const inProgress = reports.filter(r => r.status === 'in-progress').length;
-  const globalCleaned = reports.filter(r => r.status === 'cleaned').length;
+  const myReportsArr = reports.filter(r => r.reporter_name  === userName);
+  const myCleanedArr = reports.filter(r => r.volunteer_name === userName && r.status === 'cleaned');
+  const myReports    = currentUser?.reports  ?? myReportsArr.length;
+  const myCleaned    = currentUser?.cleanups ?? myCleanedArr.length;
 
-  const lastUserReport = [...myReportsArray].sort((a, b) => b.id - a.id)[0] || null;
+  const gReported = reports.filter(r => r.status === 'reported' || r.status === 'verification-failed').length;
+  const gProgress = reports.filter(r => r.status === 'in-progress').length;
+  const gCleaned  = reports.filter(r => r.status === 'cleaned').length;
+
+  const lastReport = [...myReportsArr].sort((a, b) => b.id - a.id)[0] || null;
+
+  const badges = [];
+  if (userRole === 'volunteer') {
+    if (userScore >= 50)  badges.push({ icon: '🌱', label: 'Eco Explorer', color: 'text-emerald-400', pts: 50  });
+    if (userScore >= 150) badges.push({ icon: '⚔️', label: 'Green Knight',  color: 'text-amber-400',  pts: 150 });
+    if (userScore >= 300) badges.push({ icon: '👑', label: 'Eco Champion', color: 'text-rose-400',   pts: 300 });
+  }
 
   return (
     <>
+      {/* Mobile backdrop */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-[850] bg-black/60 backdrop-blur-md sm:hidden transition-opacity duration-300"
+        <div
+          className="fixed inset-0 z-[849] bg-black/60 backdrop-blur-[2px] sm:hidden"
           onClick={onToggle}
         />
       )}
 
       <aside
-        className={`fixed top-[72px] sm:top-[72px] lg:top-[88px] left-0 bottom-0 z-[900] flex flex-col
-                    bg-black border-r border-white/[0.08]
-                    transition-all duration-300 ease-in-out
-                    ${isOpen 
-                      ? 'w-[75%] sm:w-[312px] px-4 sm:px-6 py-4 sm:py-5 translate-x-0' 
-                      : 'w-0 sm:w-[67px] px-0 sm:px-0 py-4 sm:py-5 items-center -translate-x-full sm:translate-x-0 overflow-hidden'
+        className={`fixed top-12 left-0 bottom-0 z-[900]
+                    flex flex-col bg-[#0d0d10] border-r border-white/[0.07]
+                    transition-[width] duration-300 ease-in-out overflow-hidden
+                    ${isOpen
+                      ? 'w-[78%] sm:w-[268px] translate-x-0'
+                      : 'w-0 sm:w-[60px] -translate-x-full sm:translate-x-0'
                     }`}
       >
 
-        <button
-          onClick={onToggle}
-          className={`hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-[50%] z-20 w-8 h-8 rounded-full bg-emerald-500
-                     text-white shadow-xl items-center justify-center border-0
-                     cursor-pointer transition-all hover:scale-110 active:scale-95
-                     ${!isOpen && 'right-[33px] translate-x-0'}`}
-        >
-          {isOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-        </button>
+        {/* ── TOP: avatar + name + toggle ── */}
+        <div className={`flex-shrink-0 flex items-center border-b border-white/[0.07]
+                        ${isOpen ? 'gap-2.5 px-4 h-[60px]' : 'justify-center h-[60px]'}`}>
 
-        <div className={`flex items-center gap-4 pb-6 transition-all duration-300 ${isOpen ? '' : 'sm:justify-center'} ${!isOpen && 'hidden sm:flex'}`}>
-          <div className="relative w-12 h-12 flex-shrink-0 rounded-[1.25rem] overflow-hidden border border-white/10 shadow-[0_5px_15px_rgba(16,185,129,0.3)] bg-emerald-500 flex items-center justify-center text-white font-black">
-            {initials || 'U'}
+          {/* Avatar */}
+          <div className="relative flex-shrink-0 w-8 h-8 rounded-lg
+                          bg-gradient-to-br from-emerald-400 to-emerald-700
+                          flex items-center justify-center select-none
+                          text-white text-[0.72rem] font-bold tracking-wide
+                          shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_0_14px_rgba(0,136,81,0.25)]">
+            {initials}
           </div>
 
-          {(isOpen) && (
-            <div className="flex flex-col gap-0.5 min-w-0">
-              <span className="font-black text-[1.1rem] text-white truncate tracking-tight">{userName}</span>
-              <span className="flex items-center gap-1.5 text-[0.7rem] text-slate-500 font-black uppercase tracking-[0.2em]">
-                {currentUser?.role || t.citizen}
+          {/* Name + role — only when open */}
+          {isOpen && (
+            <div className="flex-1 min-w-0">
+              <p className="text-[0.82rem] font-semibold text-white/90 truncate leading-snug">{userName}</p>
+              <span className={`inline-block text-[0.55rem] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded mt-0.5
+                              ${userRole === 'volunteer'
+                                ? 'text-emerald-400 bg-emerald-400/10 ring-1 ring-emerald-400/20'
+                                : 'text-sky-400 bg-sky-400/10 ring-1 ring-sky-400/20'}`}>
+                {userRole}
               </span>
             </div>
           )}
+
+          {/* Collapse / expand button — always in header */}
+          <button
+            onClick={onToggle}
+            title={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            className={`flex-shrink-0 flex items-center justify-center rounded-lg
+                       w-7 h-7 text-slate-500 hover:text-white hover:bg-white/[0.07]
+                       cursor-pointer transition-all duration-150
+                       ${!isOpen && 'hidden sm:flex'}`}
+          >
+            {isOpen ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
+          </button>
         </div>
 
-        <div className={`flex-1 overflow-y-auto no-scrollbar transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-          {isOpen && (
-            <div className="flex flex-col h-full">
-              <div className="h-px bg-white/[0.08] my-2 mb-5 sm:mb-8" />
+        {/* ── COLLAPSED ICON RAIL (desktop only) ── */}
+        {!isOpen && (
+          <div className="hidden sm:flex flex-col items-center gap-2 py-4 flex-1">
+            <IconRailBtn icon={<Trophy size={16} />} onClick={onOpenLeaderboard} title="Leaderboard" />
+            <div className="w-7 h-px bg-white/[0.07] my-1" />
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[0.6rem] text-slate-600 font-bold tabular-nums">{myReports}</span>
+              <span className="text-[0.48rem] text-slate-700 uppercase tracking-wider">Rep</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[0.6rem] text-emerald-600 font-bold tabular-nums">{myCleaned}</span>
+              <span className="text-[0.48rem] text-slate-700 uppercase tracking-wider">Cln</span>
+            </div>
+          </div>
+        )}
 
-              <div className="mb-5 sm:mb-8 pl-1">
-                <div className="flex items-center gap-2.5 text-[0.72rem] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">
-                  <Clock size={13} strokeWidth={3} /> {t.lastReported}
-                </div>
-                {lastUserReport ? (
-                  <div className="bg-white/[0.03] border border-white/[0.08] rounded-[2rem] p-4 sm:p-5 flex flex-col gap-2.5 shadow-inner">
-                    <div className="flex items-center gap-2">
-                      <MapPin size={14} className="text-[#ffcc00]" />
-                      <span className={`text-[0.68rem] font-black px-3 py-1 rounded-xl uppercase tracking-widest ${severityStyles[lastUserReport.severity]}`}>
-                        {t[lastUserReport.severity]}
-                      </span>
+        {/* ── EXPANDED SCROLL BODY ── */}
+        {isOpen && (
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            <div className="px-4 py-5 flex flex-col gap-5">
+
+              {/* LAST REPORTED */}
+              <Section label={t.lastReported || 'Last Reported'} icon={<Flag size={9} />}>
+                {lastReport ? (() => {
+                  const s = SEV[lastReport.severity] || SEV.low;
+                  return (
+                    <div className="rounded-xl overflow-hidden ring-1 ring-white/[0.07]">
+                      <div className={`flex items-center justify-between px-3 py-2 border-b border-white/[0.06] ${s.strip}`}>
+                        <span className={`flex items-center gap-1.5 text-[0.59rem] font-bold uppercase tracking-widest ${s.text}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${s.dot} flex-shrink-0`} />
+                          {t[lastReport.severity] || lastReport.severity}
+                        </span>
+                        <span className="flex items-center gap-1 text-[0.56rem] text-slate-600">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          {t.justNow || 'Just now'}
+                        </span>
+                      </div>
+                      <div className="px-3 py-2.5 bg-white/[0.015]">
+                        <p className="text-[0.74rem] text-slate-300 leading-relaxed m-0 line-clamp-2">
+                          {lastReport.desc || '—'}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-[0.88rem] text-white/80 leading-relaxed m-0 font-bold">
-                      {lastUserReport.desc}
-                    </p>
-                    <span className="text-[0.68rem] text-slate-600 font-bold flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" /> {t.justNow}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="text-[0.75rem] text-slate-600 font-bold italic px-2">{t.noReportsYet}</div>
+                  );
+                })() : (
+                  <p className="text-[0.68rem] text-slate-600 italic mt-1">{t.noReportsYet || 'No reports yet.'}</p>
                 )}
-              </div>
+              </Section>
 
+              {/* LEADERBOARD */}
               <button
                 onClick={onOpenLeaderboard}
-                className="mb-5 sm:mb-8 flex items-center gap-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[1.5rem] p-4 sm:p-5 transition-all group cursor-pointer border-0 shadow-[0_10px_30px_rgba(16,185,129,0.2)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.3)] hover:-translate-y-1 active:translate-y-0"
+                className="group w-full flex items-center gap-3 px-3.5 py-3 rounded-xl
+                           ring-1 ring-white/[0.07] bg-white/[0.025]
+                           hover:bg-emerald-400/[0.06] hover:ring-emerald-400/20
+                           transition-all duration-150 cursor-pointer text-left"
               >
-                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white group-hover:rotate-12 transition-transform shadow-inner">
-                  <Trophy size={20} />
+                <div className="w-7 h-7 rounded-lg bg-emerald-400/10 ring-1 ring-emerald-400/20
+                                flex items-center justify-center flex-shrink-0
+                                group-hover:scale-110 transition-transform duration-150">
+                  <Trophy size={13} className="text-emerald-400" />
                 </div>
-                <div className="flex flex-col items-start translate-y-0.5">
-                  <span className="text-[0.95rem] font-black text-white leading-none uppercase tracking-tighter">{t.leaderboard}</span>
-                  <span className="text-[0.6rem] text-white/60 font-black uppercase tracking-[0.2em] mt-1">{t.rankingsAndAwards}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[0.77rem] font-semibold text-white/85 leading-none mb-0.5">
+                    {t.leaderboard || 'Leaderboard'}
+                  </p>
+                  <p className="text-[0.56rem] text-slate-600 uppercase tracking-widest">
+                    {t.rankingsAndAwards || 'Rankings & Awards'}
+                  </p>
                 </div>
+                <ChevronLeft size={11} className="rotate-180 text-slate-600 group-hover:text-emerald-400 transition-colors flex-shrink-0" />
               </button>
 
-              <div className="h-px bg-white/[0.08] mb-5 sm:mb-8" />
+              {/* DIVIDER */}
+              <div className="h-px bg-white/[0.06]" />
 
-              <div className="mb-5 sm:mb-8 pr-1 pl-1">
-                <div className="text-[0.72rem] font-black uppercase tracking-[0.2em] text-slate-500 mb-5">
-                  {t.yourImpact}
+              {/* YOUR IMPACT */}
+              <Section label={t.yourImpact || 'Your Impact'} icon={<BarChart2 size={9} />}>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <StatCard value={myReports} label={t.reported || 'Reported'} />
+                  <StatCard value={myCleaned} label={t.cleaned  || 'Cleaned'}  />
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem] p-4 sm:p-5 flex flex-col gap-1.5 shadow-sm transition-all hover:bg-white/[0.04] hover:-translate-y-1">
-                    <span className="text-[1.8rem] sm:text-[2.2rem] font-black text-emerald-600 leading-none tracking-tighter">{myReports}</span>
-                    <span className="text-[0.6rem] sm:text-[0.68rem] text-slate-500 font-black uppercase tracking-widest">{t.reported}</span>
-                  </div>
-                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-[2rem] p-4 sm:p-5 flex flex-col gap-1.5 shadow-sm transition-all hover:bg-white/[0.04] hover:-translate-y-1">
-                    <span className="text-[1.8rem] sm:text-[2.2rem] font-black text-emerald-600 leading-none tracking-tighter">{myCleaned}</span>
-                    <span className="text-[0.6rem] sm:text-[0.68rem] text-slate-500 font-black uppercase tracking-widest">{t.cleaned}</span>
-                  </div>
-                </div>
-              </div>
+              </Section>
 
-              {/* Mobile Only Global Stats */}
-              <div className="mb-8 pr-1 pl-1 lg:hidden">
-                <div className="text-[0.72rem] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 border-t border-white/[0.08] pt-6">
-                  {t.globalImpact || 'Global Impact'}
-                </div>
-                <div className="flex flex-col gap-3">
-                  {[
-                    { label: t.reported || 'Reported', count: reported, color: 'bg-white/20' },
-                    { label: t.inProgress || 'In-Progress', count: inProgress, color: 'bg-yellow-500 shadow-[0_0_10px_#eab308]' },
-                    { label: t.cleaned || 'Cleaned', count: globalCleaned, color: 'bg-slate-500 shadow-[0_0_10px_#64748b]' }
-                  ].map((stat, i) => (
-                    <div key={i} className="flex justify-between items-center bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 shadow-sm">
-                       <div className="flex items-center gap-2.5">
-                         <div className={`w-3 h-3 rounded-full ${stat.color}`} />
-                         <span className="text-[0.68rem] font-black uppercase tracking-[0.15em] text-white/80">{stat.label}</span>
-                       </div>
-                       <span className="text-[1.3rem] font-black leading-none text-white">{stat.count}</span>
-                    </div>
-                  ))}
-                </div>
+              {/* BADGES — volunteer only */}
+              {userRole === 'volunteer' && (
+                <Section label={t.activeBadges || 'Earned Badges'} icon={<Sparkles size={9} />}>
+                  <div className="mt-2 flex flex-col gap-1.5">
+                    {badges.length === 0 ? (
+                      <p className="text-[0.66rem] text-slate-600 italic">No badges yet — reach 50 pts!</p>
+                    ) : badges.map(b => (
+                      <div key={b.label}
+                           className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl
+                                      ring-1 ring-white/[0.05] bg-white/[0.015]
+                                      hover:bg-white/[0.03] transition-colors">
+                        <span className="w-5 text-center text-[0.95rem] leading-none">{b.icon}</span>
+                        <div>
+                          <p className={`text-[0.68rem] font-semibold leading-none mb-0.5 ${b.color}`}>{b.label}</p>
+                          <p className="text-[0.52rem] text-slate-600 uppercase tracking-widest">≥ {b.pts} pts</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Section>
+              )}
+
+              {/* GLOBAL STATS — mobile only */}
+              <div className="lg:hidden">
+                <div className="h-px bg-white/[0.06] mb-4" />
+                <Section label="Global Impact" icon={<Leaf size={9} />}>
+                  <div className="mt-2 flex flex-col gap-1.5">
+                    {[
+                      { label: t.reported   || 'Reported',    v: gReported, dot: 'bg-slate-400' },
+                      { label: t.inProgress || 'In Progress', v: gProgress, dot: 'bg-amber-400 animate-pulse' },
+                      { label: t.cleaned    || 'Cleaned',     v: gCleaned,  dot: 'bg-emerald-500' },
+                    ].map(s => (
+                      <div key={s.label}
+                           className="flex items-center justify-between px-3 py-2.5
+                                      rounded-lg ring-1 ring-white/[0.05] bg-white/[0.015]">
+                        <span className="flex items-center gap-2 text-[0.62rem] font-medium text-slate-400 uppercase tracking-wider">
+                          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
+                          {s.label}
+                        </span>
+                        <span className="text-[0.9rem] font-bold text-white tabular-nums">{s.v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Section>
               </div>
 
             </div>
-          )}
+          </div>
+        )}
+
+        {/* ── LOGOUT ── */}
+        <div className={`flex-shrink-0 border-t border-white/[0.07]
+                        ${isOpen ? 'px-4 py-3' : 'hidden sm:flex sm:justify-center sm:py-3'}`}>
+          <button
+            onClick={onLogout}
+            className={`flex items-center gap-2.5 cursor-pointer rounded-lg
+                       text-[0.7rem] font-medium text-slate-600
+                       hover:text-red-400 hover:bg-red-400/[0.07]
+                       transition-all duration-150
+                       ${isOpen ? 'w-full px-3 py-2.5' : 'w-9 h-9 justify-center'}`}
+          >
+            <LogOut size={13} />
+            {isOpen && <span>{t.logOut || 'Log Out'}</span>}
+          </button>
         </div>
 
-        <button
-          onClick={onLogout}
-          className={`mt-auto flex items-center gap-3 px-5 py-3.5 sm:py-4
-                     bg-red-500/[0.05] border border-red-500/10 text-red-500
-                     rounded-[1.5rem] text-[0.85rem] font-black uppercase tracking-[0.2em] cursor-pointer
-                     hover:bg-red-500/10 hover:border-red-500/20 transition-all shadow-sm mb-6 sm:mb-2
-                     ${isOpen ? 'w-full' : 'w-12 h-12 justify-center px-0'}
-                     ${!isOpen && 'hidden sm:flex'}`}
-        >
-          <User size={18} />
-          {isOpen && <span>{t.logOut}</span>}
-        </button>
       </aside>
     </>
+  );
+}
+
+/* ── Helpers ── */
+function Section({ label, icon, children }) {
+  return (
+    <div>
+      <div className="flex items-center gap-1.5 text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-slate-600">
+        {icon}{label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function StatCard({ value, label }) {
+  return (
+    <div className="rounded-xl ring-1 ring-white/[0.07] bg-white/[0.02]
+                    hover:bg-white/[0.04] transition-colors p-3.5 flex flex-col gap-1 group">
+      <span className="text-[1.55rem] font-bold leading-none tabular-nums
+                       bg-gradient-to-br from-emerald-300 to-emerald-600
+                       bg-clip-text text-transparent">
+        {value}
+      </span>
+      <span className="text-[0.54rem] text-slate-600 uppercase tracking-widest font-semibold">{label}</span>
+    </div>
+  );
+}
+
+function IconRailBtn({ icon, onClick, title }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className="w-9 h-9 flex items-center justify-center rounded-lg
+                 text-slate-500 hover:text-emerald-400 hover:bg-emerald-400/10
+                 transition-all duration-150 cursor-pointer"
+    >
+      {icon}
+    </button>
   );
 }
