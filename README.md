@@ -24,8 +24,9 @@
 | 🎨 **8 Visual Themes** | Midnight · Matrix · Sunset · Ocean · Purple · Cherry · Arctic · Forest |
 | 🔄 **Live Refresh** | One-click report refresh with spinning indicator and "last refreshed Xs ago" tooltip |
 | 📊 **Stats Drawer** | Analytics panel with reported / in-progress / cleaned breakdowns |
-| 🌐 **Bilingual UI** | English and Hindi language support |
+| 🌐 **Multilingual UI** | 5 languages supported: English, Hindi, Tamil, Marathi, Bengali with instant translation updates |
 | 🔔 **Toast Notifications** | Contextual success / error / info toasts for all user actions |
+| 🌍 **Interactive 3D Globe** | Draggable 3D globe landing page overlay that gives a real-time global context to the waste spots |
 | 🌐 **Real-Time WebSockets** | New reports and status changes broadcast instantly to all connected users |
 
 ---
