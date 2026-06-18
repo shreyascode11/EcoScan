@@ -15,7 +15,7 @@ API.interceptors.request.use((config) => {
       if (session?.token) {
         config.headers.Authorization = `Bearer ${session.token}`;
       }
-    } catch (error) {
+    } catch {
       sessionStorage.removeItem('ecoscan_session');
     }
   }
@@ -41,6 +41,11 @@ export async function createReport({ lat, lng, severity, desc, landmark, imageDa
 
 export async function claimReport(reportId) {
   const { data } = await API.patch(`/reports/${reportId}/claim`);
+  return data;
+}
+
+export async function unclaimReport(reportId) {
+  const { data } = await API.patch(`/reports/${reportId}/unclaim`);
   return data;
 }
 

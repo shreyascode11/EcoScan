@@ -109,8 +109,17 @@ def review_cleanup_images(before_image: str, after_image: str, description: str 
                     text_parts.append(item["text"])
             output_text = "".join(text_parts).strip()
 
+    cleaned_text = (output_text or "").strip()
+    if cleaned_text.startswith("```"):
+        lines = cleaned_text.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].startswith("```"):
+            lines = lines[:-1]
+        cleaned_text = "\n".join(lines).strip()
+
     try:
-        parsed = json.loads(output_text or "{}")
+        parsed = json.loads(cleaned_text or "{}")
     except json.JSONDecodeError:
         parsed = {}
 

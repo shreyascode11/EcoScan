@@ -3,7 +3,7 @@ import hmac
 import json
 import secrets
 import uvicorn
-from fastapi import Depends, FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect, status
+from fastapi import Depends, FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect, status, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from sqlalchemy.exc import IntegrityError
 
 from ai_review import review_cleanup_images
+from ai_review_location import verify_report_location
 from database import ReportModel, SessionLocal, User, ensure_schema
 
 ROLE_CITIZEN = "citizen"
@@ -39,9 +40,15 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
 
     async def broadcast(self, message: str):
+        dead_connections = []
         for connection in self.active_connections:
             try:
                 await connection.send_text(message)
+            except Exception:
+                dead_connections.append(connection)
+        for connection in dead_connections:
+            try:
+                self.disconnect(connection)
             except Exception:
                 pass
 
@@ -190,6 +197,9 @@ def serialize_report(report: ReportModel) -> dict:
         "verification_status": report.verification_status,
         "verification_confidence": report.verification_confidence,
         "verification_summary": report.verification_summary,
+        "loc_verification_status": report.loc_verification_status,
+        "loc_verification_confidence": report.loc_verification_confidence,
+        "loc_verification_summary": report.loc_verification_summary,
     }
 
 
@@ -280,9 +290,40 @@ def get_reports(db: Session = Depends(get_db)):
     return [serialize_report(report) for report in reports]
 
 
+async def perform_location_verification(report_id: int, db_session_factory):
+    db = db_session_factory()
+    try:
+        report = db.query(ReportModel).filter(ReportModel.id == report_id).first()
+        if not report or not report.image_data:
+            return
+        
+        result = verify_report_location(
+            uploaded_image=report.image_data,
+            lat=report.lat,
+            lng=report.lng,
+            description=report.desc or "",
+        )
+        
+        report.loc_verification_status = result["status"]
+        report.loc_verification_confidence = result["confidence"]
+        report.loc_verification_summary = result["summary"]
+        db.commit()
+        db.refresh(report)
+        
+        await manager.broadcast(json.dumps({
+            "type": "REPORT_UPDATED",
+            "report": serialize_report(report)
+        }))
+    except Exception as exc:
+        print(f"Error in location verification background task: {exc}")
+    finally:
+        db.close()
+
+
 @app.post("/reports")
 async def create_report(
     report: ReportCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -297,6 +338,7 @@ async def create_report(
         reporter_name=current_user.name,
         reporter_id=current_user.id,
         verification_status="not-started",
+        loc_verification_status="pending",
     )
     db.add(new_report)
     current_user.report_count += 1
@@ -308,6 +350,8 @@ async def create_report(
         "type": "NEW_REPORT",
         "report": serialize_report(new_report)
     }))
+    
+    background_tasks.add_task(perform_location_verification, new_report.id, SessionLocal)
     
     return serialize_report(new_report)
 
@@ -327,6 +371,34 @@ async def claim_report(
     report.status = "in-progress"
     report.volunteer_name = current_user.name
     report.claimed_by_id = current_user.id
+    db.commit()
+    db.refresh(report)
+    
+    await manager.broadcast(json.dumps({
+        "type": "REPORT_UPDATED", 
+        "report": serialize_report(report)
+    }))
+    
+    return serialize_report(report)
+
+
+@app.patch("/reports/{report_id}/unclaim")
+async def unclaim_report(
+    report_id: int,
+    current_user: User = Depends(require_volunteer),
+    db: Session = Depends(get_db),
+):
+    report = db.query(ReportModel).filter(ReportModel.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    if report.status != "in-progress":
+        raise HTTPException(status_code=400, detail="This report is not currently in progress")
+    if report.claimed_by_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the volunteer who claimed this report can unclaim it")
+
+    report.status = "reported"
+    report.volunteer_name = None
+    report.claimed_by_id = None
     db.commit()
     db.refresh(report)
     

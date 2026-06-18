@@ -1,82 +1,399 @@
 import ecoscanTitle from '../assets/ecoscan_title.png';
-import { Menu, Map, Globe } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Menu, Map, Globe, BarChart3, Palette, Check, RefreshCw, Filter, ChevronDown } from 'lucide-react';
 
-export default function Dashboard({ reports, t, lang, setLang, onToggleSidebar, mapMode, setMapMode, userName }) {
-  const total      = reports.length;
+/* ─── Theme catalogue ─── */
+const THEMES = [
+  { id: 'midnight', label: 'Midnight',  emoji: '🌙', dot: 'bg-emerald-500'  },
+  { id: 'matrix',   label: 'Matrix',    emoji: '💚', dot: 'bg-lime-500'     },
+  { id: 'sunset',   label: 'Sunset',    emoji: '🌅', dot: 'bg-amber-500'    },
+  { id: 'ocean',    label: 'Ocean',     emoji: '🌊', dot: 'bg-sky-500'      },
+  { id: 'purple',   label: 'Purple',    emoji: '💜', dot: 'bg-violet-500'   },
+  { id: 'cherry',   label: 'Cherry',    emoji: '🌸', dot: 'bg-rose-500'     },
+  { id: 'arctic',   label: 'Arctic',    emoji: '❄️', dot: 'bg-cyan-300'     },
+  { id: 'forest',   label: 'Forest',    emoji: '🌲', dot: 'bg-green-700'    },
+];
+
+/* ─── Filter catalogue ─── */
+const FILTERS = [
+  { id: 'all',         label: 'All Markers',   desc: 'Show everything on the map'     },
+  { id: 'reported',    label: 'Reported',       desc: 'Newly reported waste spots'      },
+  { id: 'in-progress', label: 'In Progress',    desc: 'Being cleaned right now'         },
+  { id: 'cleaned',     label: 'Cleaned ✓',     desc: 'Already cleaned up'              },
+  { id: 'high',        label: '🔴 High',        desc: 'Critical severity only'          },
+  { id: 'medium',      label: '🟡 Medium',      desc: 'Medium severity only'            },
+  { id: 'low',         label: '🟢 Low',         desc: 'Low severity only'               },
+];
+
+/* ─── Reusable tooltip wrapper ─── */
+function Tip({ label, children }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div
+      className="relative flex items-center justify-center"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-[1200]
+                        whitespace-nowrap px-2.5 py-1.5 rounded-lg
+                        bg-[#1a1a1f] border border-white/[0.1]
+                        text-[0.62rem] font-medium text-slate-200
+                        shadow-[0_8px_24px_rgba(0,0,0,0.5)]
+                        pointer-events-none
+                        animate-[tooltipIn_0.12s_ease]">
+          {label}
+          {/* Arrow */}
+          <span className="absolute -top-1 left-1/2 -translate-x-1/2
+                           w-2 h-2 bg-[#1a1a1f] border-l border-t border-white/[0.1]
+                           rotate-45" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Reusable icon button ─── */
+function HeaderBtn({ onClick, active, danger, children, tooltip, badge }) {
+  return (
+    <Tip label={tooltip}>
+      <button
+        onClick={onClick}
+        className={`relative flex items-center justify-center w-8 h-8 rounded-lg
+                   cursor-pointer border-0 transition-all duration-150
+                   hover:scale-110 active:scale-95
+                   ${active
+                     ? 'bg-emerald-500 text-white shadow-[0_2px_12px_rgba(0,136,81,0.4)]'
+                     : danger
+                       ? 'text-slate-500 hover:text-red-400 hover:bg-red-400/10'
+                       : 'text-slate-500 hover:text-white hover:bg-white/[0.09]'
+                   }`}
+      >
+        {children}
+        {badge != null && badge > 0 && (
+          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full
+                           bg-emerald-500 text-white text-[0.45rem] font-bold
+                           flex items-center justify-center leading-none shadow">
+            {badge > 99 ? '99+' : badge}
+          </span>
+        )}
+      </button>
+    </Tip>
+  );
+}
+
+/* ─── Vertical divider ─── */
+function VDivider() {
+  return <div className="hidden sm:block w-px h-5 bg-white/[0.07] mx-0.5" />;
+}
+
+/* ─── Main Dashboard ─── */
+export default function Dashboard({
+  reports, t, lang, setLang,
+  onToggleSidebar, mapMode, setMapMode,
+  onOpenStats, currentTheme, onChangeTheme,
+  activeFilter, setActiveFilter,
+  onRefresh, lastRefreshed,
+}) {
+  const reported   = reports.filter(r => r.status === 'reported' || r.status === 'verification-failed').length;
   const inProgress = reports.filter(r => r.status === 'in-progress').length;
   const cleaned    = reports.filter(r => r.status === 'cleaned').length;
 
+  const [themeOpen,  setThemeOpen]  = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [langOpen,   setLangOpen]   = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastSec,    setLastSec]    = useState(null);
+
+  const themeRef  = useRef(null);
+  const filterRef = useRef(null);
+  const langRef   = useRef(null);
+
+  /* Close dropdowns on outside click */
+  useEffect(() => {
+    function outside(e) {
+      if (themeRef.current  && !themeRef.current.contains(e.target))  setThemeOpen(false);
+      if (filterRef.current && !filterRef.current.contains(e.target)) setFilterOpen(false);
+      if (langRef.current   && !langRef.current.contains(e.target))   setLangOpen(false);
+    }
+    document.addEventListener('mousedown', outside);
+    return () => document.removeEventListener('mousedown', outside);
+  }, []);
+
+  /* Live "Xs ago" counter */
+  useEffect(() => {
+    if (!lastRefreshed) return;
+    const id = setInterval(() => setLastSec(Math.round((Date.now() - lastRefreshed) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [lastRefreshed]);
+
+  async function handleRefresh() {
+    if (refreshing) return;
+    setRefreshing(true);
+    await onRefresh?.();
+    setTimeout(() => setRefreshing(false), 800);
+  }
+
+  const currentThemeObj  = THEMES.find(th => th.id === currentTheme) || THEMES[0];
+  const currentFilterObj = FILTERS.find(f  => f.id  === (activeFilter || 'all')) || FILTERS[0];
+  const isFiltered       = activeFilter && activeFilter !== 'all';
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-[1000] flex items-center px-4 sm:px-6 py-4 sm:py-3
-                       bg-black border-b border-white/[0.08] transition-all duration-300 shadow-2xl">
-      
-      <div className="flex items-center gap-4 group flex-shrink-0">
-        <button onClick={onToggleSidebar} className="sm:hidden w-10 h-10 flex items-center justify-center text-emerald-500 hover:text-white cursor-pointer transition-colors bg-white/5 rounded-xl mr-2">
-          <Menu size={24} />
-        </button>
-        <img src={ecoscanTitle} alt="EcoScan Logo" className="h-10 sm:h-12 lg:h-[4rem] w-auto object-contain transition-transform group-hover:scale-[1.03] origin-left" />
-      </div>
+    <>
+      {/* Tooltip keyframe */}
+      <style>{`
+        @keyframes tooltipIn {
+          from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+        }
+      `}</style>
 
-      <div className="flex-1 flex justify-center lg:justify-center items-center gap-4 sm:gap-8 pl-2 sm:pl-12">
-          <div className="flex gap-2 mr-2 sm:mr-4">
-            <button
+      <header className="fixed top-0 left-0 right-0 z-[1000] h-12
+                         flex items-center
+                         bg-[#0a0a0c]/95 backdrop-blur-xl
+                         border-b border-white/[0.07]">
+
+        {/* ── LEFT: hamburger + logo ── */}
+        <div className="flex items-center gap-2 px-3 sm:px-4 flex-shrink-0">
+          <button
+            onClick={onToggleSidebar}
+            className="sm:hidden w-8 h-8 flex items-center justify-center rounded-lg
+                       text-slate-400 hover:text-white hover:bg-white/[0.08]
+                       hover:scale-110 transition-all duration-150 cursor-pointer border-0"
+            title="Toggle sidebar"
+          >
+            <Menu size={15} />
+          </button>
+
+          <img
+            src={ecoscanTitle}
+            alt="EcoScan"
+            className="h-[18px] w-auto object-contain opacity-85 select-none"
+          />
+        </div>
+
+        {/* ── CENTER: all controls ── */}
+        <div className="flex-1 flex items-center justify-center gap-1 sm:gap-1.5 min-w-0">
+
+          {/* Group 1 — Map view mode */}
+          <div className="flex items-center gap-0.5 bg-white/[0.04] rounded-lg p-0.5">
+            <HeaderBtn
               onClick={() => setMapMode('street')}
-              className={`w-10 h-10 sm:w-10 sm:h-10 rounded-[1rem] sm:rounded-[1rem] flex items-center justify-center transition-all cursor-pointer border-0
-                ${mapMode === 'street' ? 'bg-emerald-500 text-white shadow-[0_5px_15px_rgba(16,185,129,0.3)] hover:-translate-y-0.5' : 'bg-transparent text-white/30 hover:text-white/60 hover:bg-white/5'}`}
-              title={t.streetView}
+              active={mapMode === 'street'}
+              tooltip="Street Map View"
             >
-              <Map size={18} className="sm:w-[18px] sm:h-[18px]" />
-            </button>
-            <button
+              <Map size={14} />
+            </HeaderBtn>
+            <HeaderBtn
               onClick={() => setMapMode('satellite')}
-              className={`w-10 h-10 sm:w-10 sm:h-10 rounded-[1rem] sm:rounded-[1rem] flex items-center justify-center transition-all cursor-pointer border-0
-                ${mapMode === 'satellite' ? 'bg-emerald-500 text-white shadow-[0_5px_15px_rgba(16,185,129,0.3)] hover:-translate-y-0.5' : 'bg-transparent text-white/30 hover:text-white/60 hover:bg-white/5'}`}
-              title={t.satelliteView}
+              active={mapMode === 'satellite'}
+              tooltip="Satellite View"
             >
-              <Globe size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </button>
+              <Globe size={14} />
+            </HeaderBtn>
+            <HeaderBtn
+              onClick={onOpenStats}
+              tooltip="Impact Analytics Dashboard"
+            >
+              <BarChart3 size={14} />
+            </HeaderBtn>
           </div>
 
-          <div className="flex gap-4">
-            {[
-              { id: 'en', label: t.langEn },
-              { id: 'hi', label: t.langHi }
-            ].map((l) => (
+          <VDivider />
+
+          {/* Group 2 — Filter */}
+          <div className="relative" ref={filterRef}>
+            <Tip label={isFiltered ? `Filtering: ${currentFilterObj.label}` : 'Filter Map Markers'}>
               <button
-                key={l.id}
-                onClick={() => setLang(l.id)}
-                className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[0.65rem] sm:text-[0.7rem] font-black transition-all cursor-pointer border-0 tracking-widest uppercase
-                  ${lang === l.id ? 'text-emerald-600 scale-110' : 'text-white/50 hover:text-white/80'}`}
+                onClick={() => setFilterOpen(p => !p)}
+                className={`flex items-center gap-1.5 h-8 px-2.5 rounded-lg
+                           text-[0.65rem] font-semibold tracking-wide
+                           cursor-pointer border-0 transition-all duration-150
+                           hover:scale-105 active:scale-95
+                           ${isFiltered
+                             ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30'
+                             : filterOpen
+                               ? 'bg-white/[0.08] text-white'
+                               : 'text-slate-500 hover:text-white hover:bg-white/[0.07]'}`}
               >
-                {l.id === 'en' ? 'ENG' : 'हिन्दी'}
+                <Filter size={12} />
+                <span className="hidden sm:inline max-w-[60px] truncate">{currentFilterObj.label}</span>
+                <ChevronDown size={10} className={`hidden sm:block transition-transform duration-150 ${filterOpen ? 'rotate-180' : ''}`} />
               </button>
-            ))}
-          </div>
-      </div>
+            </Tip>
 
-      <div className="flex items-center gap-10 flex-shrink-0">
-        <div className="hidden lg:flex items-center gap-8 transition-all">
-          {[
-            { id: 'reported',   label: t.reported,   count: total,      color: null },
-            { id: 'inProgress', label: t.inProgress, count: inProgress, color: 'bg-yellow-500 shadow-[0_0_12px_#eab308] animate-pulse' },
-            { id: 'cleaned',    label: t.cleaned,    count: cleaned,    color: 'bg-slate-500 shadow-[0_0_10px_#64748b]' }
-          ].map((stat, i) => (
-            <div key={i} className="flex items-center gap-3 transition-all">
-              {stat.color && (
-                <div className={`w-3.5 h-3.5 rounded-full ${stat.color} transition-all duration-500`} />
-              )}
-              <div className="flex items-center gap-2">
-                <span className="text-[0.75rem] font-black uppercase tracking-[0.15em] text-white/80">
-                  {stat.label}
-                </span>
-                <span className="text-[1.3rem] font-black leading-none text-white tracking-tighter opacity-100">
-                  {stat.count}
-                </span>
+            {filterOpen && (
+              <div className="absolute top-full mt-2 left-0
+                              bg-[#111215] border border-white/[0.09] rounded-xl
+                              shadow-[0_12px_40px_rgba(0,0,0,0.7)] p-1.5 z-[1100] w-52
+                              animate-[tooltipIn_0.12s_ease]">
+                <p className="text-[0.5rem] font-bold uppercase tracking-[0.18em] text-slate-600 px-3 pt-1.5 pb-2">
+                  Filter Map
+                </p>
+                {FILTERS.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => { setActiveFilter(f.id === 'all' ? null : f.id); setFilterOpen(false); }}
+                    className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg
+                               text-left cursor-pointer border-0 transition-all duration-100 group
+                               ${(activeFilter || 'all') === f.id
+                                 ? 'bg-white/[0.08] text-white'
+                                 : 'text-slate-400 hover:bg-white/[0.05] hover:text-white'}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[0.7rem] font-semibold leading-none mb-0.5">{f.label}</p>
+                      <p className="text-[0.57rem] text-slate-600 group-hover:text-slate-500 leading-snug">{f.desc}</p>
+                    </div>
+                    {(activeFilter || 'all') === f.id && (
+                      <Check size={11} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+                    )}
+                  </button>
+                ))}
               </div>
+            )}
+          </div>
+
+          <VDivider />
+
+          {/* Group 3 — Language */}
+          <div className="relative" ref={langRef}>
+            <Tip label="Change Language">
+              <button
+                onClick={() => setLangOpen(p => !p)}
+                className={`flex items-center gap-1.5 h-8 px-2.5 rounded-lg
+                           text-[0.65rem] font-bold tracking-widest uppercase cursor-pointer border-0
+                           transition-all duration-150 hover:scale-105 active:scale-95
+                           ${langOpen
+                             ? 'bg-white/[0.08] text-white'
+                             : 'text-slate-500 hover:text-white hover:bg-white/[0.07]'}`}
+              >
+                <span className="hidden sm:inline">
+                  {lang === 'en' ? 'EN' : lang === 'hi' ? 'HI' : lang === 'ta' ? 'TA' : lang === 'mr' ? 'MR' : 'BN'}
+                </span>
+                <span className="sm:hidden">
+                  {lang === 'en' ? 'EN' : lang === 'hi' ? 'HI' : lang === 'ta' ? 'TA' : lang === 'mr' ? 'MR' : 'BN'}
+                </span>
+                <ChevronDown size={10} className={`transition-transform duration-150 ${langOpen ? 'rotate-180' : ''}`} />
+              </button>
+            </Tip>
+
+            {langOpen && (
+              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2
+                              bg-[#111215] border border-white/[0.09] rounded-xl
+                              shadow-[0_12px_40px_rgba(0,0,0,0.7)] p-1.5 z-[1100] w-32
+                              animate-[tooltipIn_0.12s_ease]">
+                <p className="text-[0.5rem] font-bold uppercase tracking-[0.18em] text-slate-600 px-2 pt-1 pb-1.5">
+                  Language
+                </p>
+                {[
+                  { id: 'en', label: 'English' },
+                  { id: 'hi', label: 'हिन्दी' },
+                  { id: 'ta', label: 'தமிழ்' },
+                  { id: 'mr', label: 'मराठी' },
+                  { id: 'bn', label: 'বাংলা' }
+                ].map(l => (
+                  <button
+                    key={l.id}
+                    onClick={() => { setLang(l.id); setLangOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg
+                               text-[0.7rem] font-semibold text-left cursor-pointer border-0
+                               transition-all duration-100
+                               ${lang === l.id
+                                 ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30'
+                                 : 'text-slate-400 hover:bg-white/[0.05] hover:text-white'}`}
+                  >
+                    <span>{l.label}</span>
+                    {lang === l.id && <Check size={12} className="text-emerald-400" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <VDivider />
+
+          {/* Group 4 — Visual Theme */}
+          <div className="relative" ref={themeRef}>
+            <Tip label={`Theme: ${currentThemeObj.label}`}>
+              <button
+                onClick={() => setThemeOpen(p => !p)}
+                className={`flex items-center gap-1.5 h-8 px-2.5 rounded-lg
+                           text-[0.65rem] font-semibold cursor-pointer border-0
+                           transition-all duration-150 hover:scale-105 active:scale-95
+                           ${themeOpen
+                             ? 'bg-white/[0.08] text-white'
+                             : 'text-slate-500 hover:text-white hover:bg-white/[0.07]'}`}
+              >
+                <span className="text-[0.85rem] leading-none">{currentThemeObj.emoji}</span>
+                <span className="hidden sm:inline">{currentThemeObj.label}</span>
+                <ChevronDown size={10} className={`hidden sm:block transition-transform duration-150 ${themeOpen ? 'rotate-180' : ''}`} />
+              </button>
+            </Tip>
+
+            {themeOpen && (
+              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2
+                              bg-[#111215] border border-white/[0.09] rounded-xl
+                              shadow-[0_12px_40px_rgba(0,0,0,0.7)] p-2 z-[1100] w-48
+                              animate-[tooltipIn_0.12s_ease]">
+                <p className="text-[0.5rem] font-bold uppercase tracking-[0.18em] text-slate-600 px-1.5 pt-0.5 pb-2">
+                  Visual Theme
+                </p>
+                <div className="grid grid-cols-2 gap-1">
+                  {THEMES.map(th => (
+                    <button
+                      key={th.id}
+                      onClick={() => { onChangeTheme(th.id); setThemeOpen(false); }}
+                      className={`flex items-center gap-2 px-2.5 py-2.5 rounded-lg
+                                 text-[0.68rem] font-medium text-left cursor-pointer border-0
+                                 transition-all duration-100 hover:scale-[1.03]
+                                 ${currentTheme === th.id
+                                   ? 'bg-white/[0.1] text-white ring-1 ring-white/15'
+                                   : 'text-slate-400 hover:bg-white/[0.05] hover:text-white'}`}
+                    >
+                      <span className="text-base leading-none">{th.emoji}</span>
+                      <span className="truncate">{th.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <VDivider />
+
+          {/* Group 5 — Refresh */}
+          <HeaderBtn
+            onClick={handleRefresh}
+            tooltip={lastSec != null ? `Refreshed ${lastSec}s ago — click to reload` : 'Refresh reports from server'}
+          >
+            <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+          </HeaderBtn>
+
+        </div>
+
+        {/* ── RIGHT: live stats ── */}
+        <div className="hidden lg:flex items-center gap-5 px-4 flex-shrink-0">
+          {[
+            { label: t.reported    || 'Reported',    count: reported,    dot: 'bg-slate-400/70' },
+            { label: t.inProgress  || 'In Progress', count: inProgress,  dot: 'bg-amber-400 animate-pulse' },
+            { label: t.cleaned     || 'Cleaned',     count: cleaned,     dot: 'bg-emerald-500'  },
+          ].map((s, i) => (
+            <div key={i} className="flex items-center gap-1.5 group cursor-default">
+              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
+              <span className="text-[0.56rem] font-medium uppercase tracking-widest
+                               text-slate-600 group-hover:text-slate-400 transition-colors">
+                {s.label}
+              </span>
+              <span className="text-[0.85rem] font-bold text-white/80 tabular-nums leading-none
+                               group-hover:text-white transition-colors">
+                {s.count}
+              </span>
             </div>
           ))}
         </div>
-      </div>
-    </header>
+
+      </header>
+    </>
   );
 }
