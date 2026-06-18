@@ -102,17 +102,20 @@ export default function Dashboard({
 
   const [themeOpen,  setThemeOpen]  = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [langOpen,   setLangOpen]   = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [lastSec,    setLastSec]    = useState(null);
 
   const themeRef  = useRef(null);
   const filterRef = useRef(null);
+  const langRef   = useRef(null);
 
   /* Close dropdowns on outside click */
   useEffect(() => {
     function outside(e) {
       if (themeRef.current  && !themeRef.current.contains(e.target))  setThemeOpen(false);
       if (filterRef.current && !filterRef.current.contains(e.target)) setFilterOpen(false);
+      if (langRef.current   && !langRef.current.contains(e.target))   setLangOpen(false);
     }
     document.addEventListener('mousedown', outside);
     return () => document.removeEventListener('mousedown', outside);
@@ -254,23 +257,58 @@ export default function Dashboard({
           <VDivider />
 
           {/* Group 3 — Language */}
-          <div className="flex items-center gap-0.5 bg-white/[0.04] rounded-lg p-0.5">
-            {[{ id: 'en', label: 'EN', tooltip: 'Switch to English' },
-              { id: 'hi', label: 'हि', tooltip: 'हिन्दी में बदलें' }].map(l => (
-              <Tip key={l.id} label={l.tooltip}>
-                <button
-                  onClick={() => setLang(l.id)}
-                  className={`h-7 px-2.5 rounded-md text-[0.6rem] font-bold tracking-wider
-                             cursor-pointer border-0 transition-all duration-150
-                             hover:scale-105 active:scale-95
-                             ${lang === l.id
-                               ? 'bg-emerald-500/20 text-emerald-400'
-                               : 'text-slate-600 hover:text-white'}`}
-                >
-                  {l.label}
-                </button>
-              </Tip>
-            ))}
+          <div className="relative" ref={langRef}>
+            <Tip label="Change Language">
+              <button
+                onClick={() => setLangOpen(p => !p)}
+                className={`flex items-center gap-1.5 h-8 px-2.5 rounded-lg
+                           text-[0.65rem] font-bold tracking-widest uppercase cursor-pointer border-0
+                           transition-all duration-150 hover:scale-105 active:scale-95
+                           ${langOpen
+                             ? 'bg-white/[0.08] text-white'
+                             : 'text-slate-500 hover:text-white hover:bg-white/[0.07]'}`}
+              >
+                <span className="hidden sm:inline">
+                  {lang === 'en' ? 'EN' : lang === 'hi' ? 'HI' : lang === 'ta' ? 'TA' : lang === 'mr' ? 'MR' : 'BN'}
+                </span>
+                <span className="sm:hidden">
+                  {lang === 'en' ? 'EN' : lang === 'hi' ? 'HI' : lang === 'ta' ? 'TA' : lang === 'mr' ? 'MR' : 'BN'}
+                </span>
+                <ChevronDown size={10} className={`transition-transform duration-150 ${langOpen ? 'rotate-180' : ''}`} />
+              </button>
+            </Tip>
+
+            {langOpen && (
+              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2
+                              bg-[#111215] border border-white/[0.09] rounded-xl
+                              shadow-[0_12px_40px_rgba(0,0,0,0.7)] p-1.5 z-[1100] w-32
+                              animate-[tooltipIn_0.12s_ease]">
+                <p className="text-[0.5rem] font-bold uppercase tracking-[0.18em] text-slate-600 px-2 pt-1 pb-1.5">
+                  Language
+                </p>
+                {[
+                  { id: 'en', label: 'English' },
+                  { id: 'hi', label: 'हिन्दी' },
+                  { id: 'ta', label: 'தமிழ்' },
+                  { id: 'mr', label: 'मराठी' },
+                  { id: 'bn', label: 'বাংলা' }
+                ].map(l => (
+                  <button
+                    key={l.id}
+                    onClick={() => { setLang(l.id); setLangOpen(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg
+                               text-[0.7rem] font-semibold text-left cursor-pointer border-0
+                               transition-all duration-100
+                               ${lang === l.id
+                                 ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30'
+                                 : 'text-slate-400 hover:bg-white/[0.05] hover:text-white'}`}
+                  >
+                    <span>{l.label}</span>
+                    {lang === l.id && <Check size={12} className="text-emerald-400" />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <VDivider />

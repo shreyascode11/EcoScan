@@ -42,6 +42,7 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('citizen');
   const [showValidation, setShowValidation] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
 
   const isRegister = mode === 'register';
   const isValid = (!isRegister || name.trim()) && email.trim() && password.trim() && (!isRegister || password.length >= 8);
@@ -87,17 +88,37 @@ export default function LandingPage({ onAuthenticate, t, lang, setLang, loading,
         <img src={ecoscanTitle} alt="EcoScan"
           className="h-5 sm:h-6 w-auto object-contain opacity-80 pointer-events-none" />
 
-        <div className="flex items-center gap-1 bg-white/[0.03] border border-white/[0.07] rounded-full px-1.5 py-1">
-          {[{ id:'en', label:'EN' }, { id:'hi', label:'हि' }].map(l => (
-            <button key={l.id} onClick={() => setLang(l.id)}
-              className={`px-3 py-1 rounded-full text-[0.62rem] font-bold tracking-widest uppercase
-                         cursor-pointer border-0 transition-all duration-200
-                         ${lang === l.id
-                           ? 'bg-emerald-500/20 text-emerald-400'
-                           : 'text-slate-600 hover:text-slate-400 bg-transparent'}`}>
-              {l.label}
-            </button>
-          ))}
+        <div className="relative">
+          <button 
+            onClick={() => setLangOpen(!langOpen)}
+            className="flex items-center gap-1.5 bg-white/[0.03] border border-white/[0.07] rounded-full px-3 py-1.5 text-[0.62rem] font-bold tracking-widest uppercase text-slate-300 hover:text-white transition-colors cursor-pointer"
+          >
+            {lang === 'en' ? 'ENGLISH' : lang === 'hi' ? 'हिन्दी' : lang === 'ta' ? 'தமிழ்' : lang === 'mr' ? 'मराठी' : 'বাংলা'}
+            <span className={`transition-transform duration-200 ${langOpen ? 'rotate-180' : ''}`}>▼</span>
+          </button>
+          
+          {langOpen && (
+            <div className="absolute top-full right-0 mt-2 bg-[#111215] border border-white/[0.09] rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.7)] p-1.5 z-[1100] w-32 flex flex-col gap-0.5">
+              {[
+                { id: 'en', label: 'English' },
+                { id: 'hi', label: 'हिन्दी' },
+                { id: 'ta', label: 'தமிழ்' },
+                { id: 'mr', label: 'मराठी' },
+                { id: 'bn', label: 'বাংলা' }
+              ].map(l => (
+                <button
+                  key={l.id}
+                  onClick={() => { setLang(l.id); setLangOpen(false); }}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-[0.7rem] font-semibold cursor-pointer border-0 transition-colors
+                             ${lang === l.id 
+                               ? 'bg-emerald-500/20 text-emerald-400' 
+                               : 'text-slate-400 hover:bg-white/[0.05] hover:text-white'}`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </nav>
 
